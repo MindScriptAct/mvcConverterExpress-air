@@ -83,27 +83,251 @@ public class Main extends Sprite {
 			var line:FileLine = new FileLine(file, tab);
 			line.y = lines.length * 20;
 			resultContainer.addChild(line);
+			line.analizeButton.addEventListener(MouseEvent.CLICK, analizeFile);
 
 			lines.push(line);
 
 			if (file.isDirectory) {
 				traceDir(file, tab + "| ");
 			} else {
-				analizeFile(file);
+				//analizeFile(file);
 			}
 		}
 	}
 
-	private function analizeFile(file:File):void {
-		var localFileStream:FileStream = new FileStream();
-		localFileStream.open(file, FileMode.UPDATE);
+	private function analizeFile(event:MouseEvent):void {
+
+		var file:File = event.target.parent.file;
+
+		if (!file.isDirectory) {
+			if (file.extension == "as" || file.extension == "mxml") {
 
 
-		var test:Object = localFileStream.readUTFBytes(file.size);
+				debugLabel.text = "";
 
-		localFileStream.close();
+				var localFileStream:FileStream = new FileStream();
+				localFileStream.open(file, FileMode.UPDATE);
+
+
+				var fileText:String = localFileStream.readUTFBytes(file.size);
+
+
+				analizeText(fileText);
+
+
+				localFileStream.close();
+			} else {
+				debugLabel.text = "Only as and mxml files suported.";
+			}
+		} else {
+			debugLabel.text = "Dictionary?.";
+		}
 	}
 
-}
 
+	private var fileText:String;
+
+	private var index:int;
+	private var length:int;
+
+	private var char:String;
+	private var charCode:int;
+	private var nextChar:String;
+	private var nextCharCode:int;
+	private var prevChar:String;
+
+	private var tokenType:String;
+	private var tokenData:String;
+
+	private function analizeText(fileText:String):void {
+
+		this.fileText = fileText;
+		index = 0;
+		length = fileText.length;
+		nextChar = "";
+		prevChar = "";
+
+		var tokens:Vector.<Token> = new <Token>[];
+
+		while (index <= length) {
+
+			readChar();
+
+
+			tokenType = Tokens.UNDEFINED;
+			tokenData = char;
+
+			if (char == "/") {
+				if (nextChar == "/") {
+					tokenType = Tokens.LINE_COMMENT;
+
+				} else if (nextChar == "*") {
+					tokenType = Tokens.BLOCK_COMMENT;
+
+					while (notEnd && (char != "*" || nextChar != "/")) {
+						readWriteChar();
+					}
+					readWriteChar();
+				}
+			} else if (whiteSpace) {
+				tokenType = Tokens.WHITE_SPACE;
+				while (notEnd && whiteSpaceNext) {
+					readWriteChar();
+				}
+			} else if (char == '"') {
+				tokenType = Tokens.STRING;
+				while (notEnd && nextChar != '"') {
+					readWriteChar();
+				}
+				readWriteChar();
+			} else if (char == "'") {
+				tokenType = Tokens.STRING;
+				while (notEnd && nextChar != "'") {
+					readWriteChar();
+				}
+				readWriteChar();
+			} else if (isNumber) {
+				tokenType = Tokens.NUMBER;
+				while (notEnd && isNextNumberOrDot) {
+					readWriteChar();
+				}
+			} else if (isLiteral) {
+				tokenType = Tokens.LITERAL;
+				while (notEnd && isNextNumberOrLiteral) {
+					readWriteChar();
+				}
+			} else if (char == "(") {
+				tokenType = Tokens.OPEN;
+			} else if (char == ")") {
+				tokenType = Tokens.CLOSE;
+			} else if (char == "{") {
+				tokenType = Tokens.OPEN_BLOCK;
+			} else if (char == "}") {
+				tokenType = Tokens.CLOSE_BLOCK;
+			} else if (char == "[") {
+				tokenType = Tokens.OPEN_ARRAY;
+			} else if (char == "]") {
+				tokenType = Tokens.CLOSE_ARRAY;
+			} else if (char == "<") {
+				if (nextChar == "=") {
+					tokenType = Tokens.LESSEQUALS;
+				} else {
+					tokenType = Tokens.LESS;
+				}
+			} else if (char == ">") {
+				if (nextChar == "=") {
+					tokenType = Tokens.MOREEQUALS;
+				} else {
+					tokenType = Tokens.MORE;
+				}
+
+			} else if (char == "=") {
+				if (nextChar == "=") {
+					tokenType = Tokens.EQUALS;
+				} else {
+					tokenType = Tokens.ASSIGN;
+				}
+			} else if (char == ".") {
+				tokenType = Tokens.DOT;
+			} else if (char == ",") {
+				tokenType = Tokens.COMMA;
+			} else if (char == "+" || char == "-" || char == "/" || char == "*" || char == "&") {
+				tokenType = Tokens.OPERATOR;
+			} else if (char == "|") {
+				tokenType = Tokens.OR;
+			} else if (char == "&") {
+				tokenType = Tokens.AND;
+			} else if (char == ";") {
+				tokenType = Tokens.END;
+			}
+
+
+			tokens.push(new Token(tokenType, tokenData));
+
+
+		}
+
+		for (var i:int = 0; i < tokens.length; i++) {
+			debugLabel.text += tokens[i].tokenType + ":" + tokens[i].tokenData + "\n";
+		}
+
+	}
+
+	[Inline]
+	private function get isNextNumberOrLiteral():Boolean {
+		return isNextLiteral || isNextNumber;
+	}
+
+	[Inline]
+	private function get isNextLiteral():Boolean {
+		return nextCharCode >= 97 && nextCharCode <= 122 ||  // a..z
+				nextCharCode >= 65 && nextCharCode <= 90 ||  // A..Z
+				nextCharCode == 95 ||                    // _
+				nextCharCode == 36;                      // $
+	}
+
+
+	[Inline]
+	private function get isLiteral():Boolean {
+		return charCode >= 97 && charCode <= 122 ||  // a..z
+				charCode >= 65 && charCode <= 90 ||  // A..Z
+				charCode == 95 ||                    // _
+				charCode == 36;                      // $
+	}
+
+
+	[Inline]
+	private function get isNextNumberOrDot():Boolean {
+		return nextCharCode >= 48 && nextCharCode <= 58 || nextChar == ".";
+	}
+
+	[Inline]
+	private function get isNextNumber():Boolean {
+		return nextCharCode >= 48 && nextCharCode <= 58;
+	}
+
+	[Inline]
+	private function get isNumber():Boolean {
+		return charCode >= 48 && charCode <= 58;
+	}
+
+
+	[Inline]
+	private function readChar():void {
+		prevChar = char;
+		char = fileText.charAt(index);
+		charCode = fileText.charCodeAt(index);
+		if (index < length) {
+			nextChar = fileText.charAt(index + 1);
+			nextCharCode = fileText.charCodeAt(index + 1);
+		}
+		index++;
+	}
+
+	[Inline]
+	private function readWriteChar():void {
+		readChar();
+		writeChar();
+	}
+
+	[Inline]
+	private function writeChar():void {
+		tokenData += char;
+	}
+
+	[Inline]
+	private function get notEnd():Boolean {
+		return index <= length;
+	}
+
+	[Inline]
+	private function get whiteSpace():Boolean {
+		return (char == " " || char == "\t" || char == "\n" || char == "\r");
+	}
+
+	[Inline]
+	private function get whiteSpaceNext():Boolean {
+		return (nextChar == " " || nextChar == "\t" || nextChar == "\n" || nextChar == "\r");
+	}
+}
 }

@@ -9,12 +9,16 @@ public class FileLine extends Sprite {
 
 	public static var homePath:String;
 
-	private var analizeButton:PushButton;
+	public var analizeButton:PushButton;
+
+	public var file:File;
 
 	public function FileLine(file:File, tab:String) {
 		//var nameSpit:Array = file.nativePath.split(textLabel.text)
 
-		var fileLabel = new Text(this, 30, 0, "");
+		this.file = file;
+
+		var fileLabel:Text = new Text(this, 30, 0, "");
 		fileLabel.width = 800;
 		fileLabel.height = 20;
 
