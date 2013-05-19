@@ -2,7 +2,7 @@
 <module type="Flex" version="4">
   <component name="FlexBuildConfigurationManager" active="project-unpurifier">
     <configurations>
-      <configuration name="project-unpurifier" target-platform="Desktop" main-class="Main" output-file="project-unpurifier.swf" output-folder="$MODULE_DIR$/out/production/project-unpurifier">
+      <configuration name="project-unpurifier" target-platform="Desktop" main-class="Main" output-file="project-unpurifier.swf" output-folder="$MODULE_DIR$/bin">
         <dependencies target-player="11.5">
           <sdk name="flex_sdk_4.9.1" />
         </dependencies>

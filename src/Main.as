@@ -3,12 +3,25 @@ import com.bit101.components.PushButton;
 import com.bit101.components.Text;
 import com.bit101.components.TextArea;
 
+import constants.BlockTypes;
+
+import constants.Literals;
+
+import core.FileAnilizer;
+import core.FileTokenizer;
+
+import data.TokenVO;
+
 import flash.display.Sprite;
+import flash.display.StageAlign;
+import flash.display.StageScaleMode;
 import flash.events.Event;
 import flash.events.MouseEvent;
 import flash.filesystem.File;
 import flash.filesystem.FileMode;
 import flash.filesystem.FileStream;
+
+import view.FileLine;
 
 /**
  * ...
@@ -26,6 +39,8 @@ public class Main extends Sprite {
 	[SWF(width="1800", height="600", frameRate="30")]
 	public function Main():void {
 
+		stage.scaleMode = StageScaleMode.NO_SCALE;
+		stage.align = StageAlign.TOP_LEFT;
 
 		textLabel = new Text(this, 10, 50, "test");
 		textLabel.width = 900;
@@ -49,6 +64,13 @@ public class Main extends Sprite {
 		resultContainer.x = 10;
 		resultContainer.y = 120;
 
+		Literals.initLiteral();
+		BlockTypes.initBlockTypes();
+
+		CONFIG::debug {
+			file_select();
+		}
+
 	}
 
 
@@ -58,19 +80,27 @@ public class Main extends Sprite {
 		file.browseForDirectory("Please select a directory...");
 	}
 
-	private function file_select(evt:Event):void {
+	private function file_select(evt:Event = null):void {
 
-		textLabel.text = file.nativePath;
-
-		FileLine.homePath = file.nativePath;
-
-		//debugLabel.text = "";
-
-		while (lines.length) {
-			resultContainer.removeChild(lines.pop());
+		CONFIG::debug {
+			if (file == null) {
+				file = File.applicationStorageDirectory.resolvePath("C:/aTestSrc");
+			}
 		}
+		if (file.exists) {
 
-		traceDir(file, "");
+			textLabel.text = file.nativePath;
+
+			FileLine.homePath = file.nativePath;
+
+			//debugLabel.text = "";
+
+			while (lines.length) {
+				resultContainer.removeChild(lines.pop());
+			}
+
+			traceDir(file, "");
+		}
 
 	}
 
@@ -102,20 +132,16 @@ public class Main extends Sprite {
 		if (!file.isDirectory) {
 			if (file.extension == "as" || file.extension == "mxml") {
 
-
 				debugLabel.text = "";
 
-				var localFileStream:FileStream = new FileStream();
-				localFileStream.open(file, FileMode.UPDATE);
+				var fileTokenizer:FileTokenizer = new FileTokenizer(debugLabel);
 
+				var tokens:Vector.<TokenVO> = fileTokenizer.tokenizeFile(file);
 
-				var fileText:String = localFileStream.readUTFBytes(file.size);
+				var fileAnalivel:FileAnilizer = new FileAnilizer(debugLabel);
 
+				fileAnalivel.analizeTokens(tokens);
 
-				analizeText(fileText);
-
-
-				localFileStream.close();
 			} else {
 				debugLabel.text = "Only as and mxml files suported.";
 			}
@@ -124,210 +150,5 @@ public class Main extends Sprite {
 		}
 	}
 
-
-	private var fileText:String;
-
-	private var index:int;
-	private var length:int;
-
-	private var char:String;
-	private var charCode:int;
-	private var nextChar:String;
-	private var nextCharCode:int;
-	private var prevChar:String;
-
-	private var tokenType:String;
-	private var tokenData:String;
-
-	private function analizeText(fileText:String):void {
-
-		this.fileText = fileText;
-		index = 0;
-		length = fileText.length;
-		nextChar = "";
-		prevChar = "";
-
-		var tokens:Vector.<Token> = new <Token>[];
-
-		while (index <= length) {
-
-			readChar();
-
-
-			tokenType = Tokens.UNDEFINED;
-			tokenData = char;
-
-			if (char == "/") {
-				if (nextChar == "/") {
-					tokenType = Tokens.LINE_COMMENT;
-
-				} else if (nextChar == "*") {
-					tokenType = Tokens.BLOCK_COMMENT;
-
-					while (notEnd && (char != "*" || nextChar != "/")) {
-						readWriteChar();
-					}
-					readWriteChar();
-				}
-			} else if (whiteSpace) {
-				tokenType = Tokens.WHITE_SPACE;
-				while (notEnd && whiteSpaceNext) {
-					readWriteChar();
-				}
-			} else if (char == '"') {
-				tokenType = Tokens.STRING;
-				while (notEnd && nextChar != '"') {
-					readWriteChar();
-				}
-				readWriteChar();
-			} else if (char == "'") {
-				tokenType = Tokens.STRING;
-				while (notEnd && nextChar != "'") {
-					readWriteChar();
-				}
-				readWriteChar();
-			} else if (isNumber) {
-				tokenType = Tokens.NUMBER;
-				while (notEnd && isNextNumberOrDot) {
-					readWriteChar();
-				}
-			} else if (isLiteral) {
-				tokenType = Tokens.LITERAL;
-				while (notEnd && isNextNumberOrLiteral) {
-					readWriteChar();
-				}
-			} else if (char == "(") {
-				tokenType = Tokens.OPEN;
-			} else if (char == ")") {
-				tokenType = Tokens.CLOSE;
-			} else if (char == "{") {
-				tokenType = Tokens.OPEN_BLOCK;
-			} else if (char == "}") {
-				tokenType = Tokens.CLOSE_BLOCK;
-			} else if (char == "[") {
-				tokenType = Tokens.OPEN_ARRAY;
-			} else if (char == "]") {
-				tokenType = Tokens.CLOSE_ARRAY;
-			} else if (char == "<") {
-				if (nextChar == "=") {
-					tokenType = Tokens.LESSEQUALS;
-				} else {
-					tokenType = Tokens.LESS;
-				}
-			} else if (char == ">") {
-				if (nextChar == "=") {
-					tokenType = Tokens.MOREEQUALS;
-				} else {
-					tokenType = Tokens.MORE;
-				}
-
-			} else if (char == "=") {
-				if (nextChar == "=") {
-					tokenType = Tokens.EQUALS;
-				} else {
-					tokenType = Tokens.ASSIGN;
-				}
-			} else if (char == ".") {
-				tokenType = Tokens.DOT;
-			} else if (char == ",") {
-				tokenType = Tokens.COMMA;
-			} else if (char == "+" || char == "-" || char == "/" || char == "*" || char == "&") {
-				tokenType = Tokens.OPERATOR;
-			} else if (char == "|") {
-				tokenType = Tokens.OR;
-			} else if (char == "&") {
-				tokenType = Tokens.AND;
-			} else if (char == ";") {
-				tokenType = Tokens.END;
-			}
-
-
-			tokens.push(new Token(tokenType, tokenData));
-
-
-		}
-
-		for (var i:int = 0; i < tokens.length; i++) {
-			debugLabel.text += tokens[i].tokenType + ":" + tokens[i].tokenData + "\n";
-		}
-
-	}
-
-	[Inline]
-	private function get isNextNumberOrLiteral():Boolean {
-		return isNextLiteral || isNextNumber;
-	}
-
-	[Inline]
-	private function get isNextLiteral():Boolean {
-		return nextCharCode >= 97 && nextCharCode <= 122 ||  // a..z
-				nextCharCode >= 65 && nextCharCode <= 90 ||  // A..Z
-				nextCharCode == 95 ||                    // _
-				nextCharCode == 36;                      // $
-	}
-
-
-	[Inline]
-	private function get isLiteral():Boolean {
-		return charCode >= 97 && charCode <= 122 ||  // a..z
-				charCode >= 65 && charCode <= 90 ||  // A..Z
-				charCode == 95 ||                    // _
-				charCode == 36;                      // $
-	}
-
-
-	[Inline]
-	private function get isNextNumberOrDot():Boolean {
-		return nextCharCode >= 48 && nextCharCode <= 58 || nextChar == ".";
-	}
-
-	[Inline]
-	private function get isNextNumber():Boolean {
-		return nextCharCode >= 48 && nextCharCode <= 58;
-	}
-
-	[Inline]
-	private function get isNumber():Boolean {
-		return charCode >= 48 && charCode <= 58;
-	}
-
-
-	[Inline]
-	private function readChar():void {
-		prevChar = char;
-		char = fileText.charAt(index);
-		charCode = fileText.charCodeAt(index);
-		if (index < length) {
-			nextChar = fileText.charAt(index + 1);
-			nextCharCode = fileText.charCodeAt(index + 1);
-		}
-		index++;
-	}
-
-	[Inline]
-	private function readWriteChar():void {
-		readChar();
-		writeChar();
-	}
-
-	[Inline]
-	private function writeChar():void {
-		tokenData += char;
-	}
-
-	[Inline]
-	private function get notEnd():Boolean {
-		return index <= length;
-	}
-
-	[Inline]
-	private function get whiteSpace():Boolean {
-		return (char == " " || char == "\t" || char == "\n" || char == "\r");
-	}
-
-	[Inline]
-	private function get whiteSpaceNext():Boolean {
-		return (nextChar == " " || nextChar == "\t" || nextChar == "\n" || nextChar == "\r");
-	}
 }
 }

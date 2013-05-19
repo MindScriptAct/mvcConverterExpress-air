@@ -1,4 +1,4 @@
-package {
+package view {
 import com.bit101.components.PushButton;
 import com.bit101.components.Text;
 

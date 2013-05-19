@@ -1,5 +1,8 @@
-package {
-public class Tokens {
+package constants {
+import flash.utils.Dictionary;
+
+public class TokenTypes {
+
 	public static const UNDEFINED:String = ">>>UNDEFINED";
 	public static const LINE_COMMENT:String = ">>>LINE_COMMENT";
 	public static const BLOCK_COMMENT:String = ">>>BLOCK_COMMENT";
@@ -25,6 +28,8 @@ public class Tokens {
 	public static const OPEN:String = ">>>OPEN";
 	public static const CLOSE:String = ">>>CLOSE";
 	public static const END:String = ">>>END";
+
+
 
 
 }
