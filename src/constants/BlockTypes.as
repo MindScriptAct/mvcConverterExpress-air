@@ -29,6 +29,7 @@ public class BlockTypes {
 
 	public static const MODIFIERS:int = blockCount++;
 	public static const CLASS_HEADER:int = blockCount++;
+	public static const VAR_DEFINITION:int = blockCount++;
 
 
 	// init
@@ -48,7 +49,9 @@ public class BlockTypes {
 
 		DEBUG[MODIFIERS] = "modifiers";
 
-		DEBUG[CLASS_HEADER] = "class_header";
+		DEBUG[CLASS_HEADER] = "class-header";
+
+		DEBUG[VAR_DEFINITION] = "var-definition";
 	}
 
 }

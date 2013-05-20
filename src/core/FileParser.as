@@ -95,31 +95,32 @@ public class FileParser {
 					case Literals.CLASS:
 						var classBlock:BlockContainerVO = new BlockContainerVO(BlockTypes.CLASS);
 						extractModifiers(fillBlock, classBlock);
-						readStrictToken(importBlock, TokenTypes.LITERAL, Literals.CLASS);
+						readStrictToken(classBlock, TokenTypes.LITERAL, Literals.CLASS);
 						readClassHeader(classBlock);
 						readBlock(classBlock);
 						fillBlock.subBlocks.push(classBlock);
 						break;
 					case Literals.VAR:
-//						var varBlock:BlockContainerVO = new BlockContainerVO(BlockTypes.VAR);
-
-//						extractModifiers(fillBlock, varBlock);
-
-
-						tokenStack.push(token);
-						index++;
-
-
+						var varBlock:BlockContainerVO = new BlockContainerVO(BlockTypes.VAR);
+						extractModifiers(fillBlock, varBlock);
+						readStrictToken(varBlock, TokenTypes.LITERAL, Literals.VAR);
+						readVariable(varBlock);
+						fillBlock.subBlocks.push(varBlock);
 						break;
 					case Literals.CONST:
-//						subType = BlockTypes.CONST;
-						tokenStack.push(token);
-						index++;
+						var constBlock:BlockContainerVO = new BlockContainerVO(BlockTypes.CONST);
+						extractModifiers(fillBlock, constBlock);
+						readStrictToken(constBlock, TokenTypes.LITERAL, Literals.CONST);
+						readVariable(constBlock);
+						fillBlock.subBlocks.push(constBlock);
 						break;
 					case Literals.FUNCTION:
-//						subType = BlockTypes.FUNCTION;
-						tokenStack.push(token);
-						index++;
+						var functionBlock:BlockContainerVO = new BlockContainerVO(BlockTypes.FUNCTION);
+						extractModifiers(fillBlock, functionBlock);
+						readStrictToken(functionBlock, TokenTypes.LITERAL, Literals.FUNCTION);
+						readClassHeader(functionBlock);
+						readBlock(functionBlock);
+						fillBlock.subBlocks.push(functionBlock);
 						break;
 					default:
 						throw  Error("Not handled block literal:" + token.value);
@@ -150,6 +151,28 @@ public class FileParser {
 	}
 
 	[Inline]
+	private function readVariable(varBlock:BlockContainerVO):void {
+		// lame variable reader...
+		// TODO : impprove
+		var varTokens:Vector.<TokenVO> = new <TokenVO>[];
+		while (index < tokenCount) {
+			var token:TokenVO = tokens[index];
+
+			if (token.type != TokenTypes.END && token.kind != TokenKind.MODIFIER) {
+				varTokens.push(token)
+				index++;
+			} else {
+				if (token.type == TokenTypes.END) {
+					varTokens.push(token)
+					index++;
+				}
+				varBlock.subBlocks.push(new BlockGroupVO(varTokens, BlockTypes.VAR_DEFINITION));
+				break;
+			}
+		}
+	}
+
+	[Inline]
 	private function readClassHeader(classBlock:BlockContainerVO):void {
 		var classHeaderBlock:BlockGroupVO = new BlockGroupVO(null, BlockTypes.CLASS_HEADER);
 		readTillToken(classHeaderBlock, TokenTypes.OPEN_BLOCK);
@@ -162,7 +185,7 @@ public class FileParser {
 			if (token.type != finishTokenType) {
 				classHeaderBlock.subTokns.push(token);
 			} else {
-			    break;
+				break;
 			}
 			index++;
 		}
