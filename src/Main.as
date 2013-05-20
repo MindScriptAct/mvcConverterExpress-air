@@ -7,7 +7,7 @@ import constants.BlockTypes;
 
 import constants.Literals;
 
-import core.FileAnilizer;
+import core.FileParser;
 import core.FileTokenizer;
 
 import data.TokenVO;
@@ -138,7 +138,7 @@ public class Main extends Sprite {
 
 				var tokens:Vector.<TokenVO> = fileTokenizer.tokenizeFile(file);
 
-				var fileAnalivel:FileAnilizer = new FileAnilizer(debugLabel);
+				var fileAnalivel:FileParser = new FileParser(debugLabel);
 
 				fileAnalivel.analizeTokens(tokens);
 

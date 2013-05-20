@@ -12,6 +12,7 @@ public class BlockTypes {
 
 	private static var blockCount:int = 0;
 
+	public static const DEBUG:Dictionary = new Dictionary();
 
 	public static const UNDEFINED:int = blockCount++;
 	public static const ROOT:int = blockCount++;
@@ -26,7 +27,9 @@ public class BlockTypes {
 	public static const PATH:int = blockCount++;
 	public static const BLOCK:int = blockCount++;
 
-	public static const DEBUG:Dictionary = new Dictionary();
+	public static const MODIFIERS:int = blockCount++;
+	public static const CLASS_HEADER:int = blockCount++;
+
 
 	// init
 	public static function initBlockTypes():void {
@@ -42,6 +45,10 @@ public class BlockTypes {
 		DEBUG[KEY] = "key";
 		DEBUG[PATH] = "path";
 		DEBUG[BLOCK] = "block";
+
+		DEBUG[MODIFIERS] = "modifiers";
+
+		DEBUG[CLASS_HEADER] = "class_header";
 	}
 
 }

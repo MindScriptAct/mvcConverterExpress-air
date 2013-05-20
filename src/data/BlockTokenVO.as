@@ -15,7 +15,7 @@ public class BlockTokenVO extends BlockBaseVO {
 	}
 
 	override public function debugBlock(tab:String):String {
-		return tab + "+" + token.type + "\t\t\t\t" + token.keyWord + "\n";
+		return tab + "+" + token.type + "\t\t\t\t" + token.keyWord + "\t\t\t\t\t\t" + token.value + "\n";
 	}
 }
 }

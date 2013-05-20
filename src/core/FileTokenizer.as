@@ -1,6 +1,7 @@
 package core {
 import com.bit101.components.TextArea;
 
+import constants.AppConstants;
 import constants.Literals;
 import constants.TokenKind;
 import constants.TokenTypes;
@@ -117,10 +118,13 @@ public class FileTokenizer {
 				}
 				if (Literals.BLOCK_STARTER_LITERALS[tokenData] == true) {
 					tokenKind = TokenKind.BLOCK_STARTER;
+				} else if (Literals.MODIFIER_LITERALS[tokenData] == true) {
+					tokenKind = TokenKind.MODIFIER;
 				}
 				if (Literals.ALL_LITERALS[tokenData] != null) {
 					tokenKeyWord = Literals.ALL_LITERALS[tokenData]
 				}
+
 			} else if (char == "(") {
 				tokenType = TokenTypes.OPEN;
 //				tokenKind = TokenKind.GROUP_OPEN;
@@ -184,8 +188,10 @@ public class FileTokenizer {
 				tokens.push(new TokenVO(tokenKind, tokenType, tokenData, tokenKeyWord));
 			}
 		}
-		for (var i:int = 0; i < tokens.length; i++) {
-			debugLabel.text += tokens[i].type + ":" + tokens[i].value + ((tokens[i].keyWord) ? "\t\t\t" + tokens[i].keyWord : "") + "\n";
+		if (AppConstants.DEBUG_TOKENS) {
+			for (var i:int = 0; i < tokens.length; i++) {
+				debugLabel.text += tokens[i].type + ":" + tokens[i].value + ((tokens[i].keyWord) ? "\t\t\t" + tokens[i].keyWord : "") + "\n";
+			}
 		}
 	}
 

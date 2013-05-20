@@ -24,7 +24,7 @@ public class BlockGroupVO extends BlockBaseVO {
 	override public function debugBlock(tab:String):String {
 		var retVal:String = "";
 		for (var i:int = 0; i < subTokns.length; i++) {
-			retVal += tab + "" + subTokns[i].type + "\t\t\t\t" + subTokns[i].keyWord + "\n";
+			retVal += tab + "" + subTokns[i].type + "\t\t\t\t" + subTokns[i].keyWord +"\t\t\t\t\t\t" + subTokns[i].value+ "\n";
 		}
 		return retVal;
 	}

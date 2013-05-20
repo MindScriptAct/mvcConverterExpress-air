@@ -78,6 +78,7 @@ public class Literals {
 	// all
 	public static var ALL_LITERALS:Dictionary = new Dictionary();
 	public static var BLOCK_STARTER_LITERALS:Dictionary = new Dictionary();
+	public static var MODIFIER_LITERALS:Dictionary = new Dictionary();
 
 	// init
 	public static function initLiteral():void {
@@ -137,10 +138,6 @@ public class Literals {
 		ALL_LITERALS[IMPORT] = "IMPORT";
 
 
-
-
-
-
 		BLOCK_STARTER_LITERALS[PACKAGE] = true;
 		BLOCK_STARTER_LITERALS[IMPORT] = true;
 		BLOCK_STARTER_LITERALS[CLASS] = true;
@@ -149,6 +146,15 @@ public class Literals {
 		BLOCK_STARTER_LITERALS[FUNCTION] = true;
 
 
+		MODIFIER_LITERALS[DYNAMIC] = true;
+		MODIFIER_LITERALS[FINAL] = true;
+		MODIFIER_LITERALS[INTERNAL] = true;
+		MODIFIER_LITERALS[NATIVE] = true;
+		MODIFIER_LITERALS[OVERRIDE] = true;
+		MODIFIER_LITERALS[PRIVATE] = true;
+		MODIFIER_LITERALS[PROTECTED] = true;
+		MODIFIER_LITERALS[PUBLIC] = true;
+		MODIFIER_LITERALS[STATIC] = true;
 
 
 	}

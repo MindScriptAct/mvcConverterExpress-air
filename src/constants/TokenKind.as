@@ -12,6 +12,8 @@ public class TokenKind {
 
 	public static const GROUP_CLOSE:int = kindCount++;
 
+	public static const MODIFIER:int = kindCount++;
+
 
 
 

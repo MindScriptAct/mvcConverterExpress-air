@@ -1,6 +1,7 @@
 package core {
 import com.bit101.components.TextArea;
 
+import constants.AppConstants;
 import constants.BlockTypes;
 import constants.Literals;
 import constants.TokenKind;
@@ -12,7 +13,7 @@ import data.BlockGroupVO;
 import data.BlockTokenVO;
 import data.TokenVO;
 
-public class FileAnilizer {
+public class FileParser {
 	private var debugLabel:TextArea;
 
 	private var tokens:Vector.<TokenVO>;
@@ -25,7 +26,7 @@ public class FileAnilizer {
 	private var tempBlock:BlockBaseVO;
 
 
-	public function FileAnilizer(debugLabel:TextArea) {
+	public function FileParser(debugLabel:TextArea) {
 		this.debugLabel = debugLabel;
 	}
 
@@ -39,14 +40,18 @@ public class FileAnilizer {
 		analizeBlock(root);
 		// if something is left after scanning... just add it to the end. ()
 		if (index < tokenCount) {
-			readTillTheEnd(root);
+			readTillTheFileEnd(root);
 		}
 
 		debugLabel.text += "//==================\n// analize\n//==================\n";
-		debugLabel.text += root.debugBlock("");
+		if (AppConstants.DEBUG_PARSER) {
+			debugLabel.text += root.debugBlock("");
+		}
 
 		debugLabel.text += "//==================\n// output\n//==================\n";
-		debugLabel.text += root.readBlock();
+		if (AppConstants.DEBUG_OUTPUT) {
+			debugLabel.text += root.readBlock();
+		}
 	}
 
 
@@ -74,28 +79,37 @@ public class FileAnilizer {
 				switch (token.value) {
 					case Literals.PACKAGE:
 						clearStack(fillBlock);
-						var packageBlack:BlockContainerVO = new BlockContainerVO(BlockTypes.PACKAGE);
-						writeSingeToken(packageBlack, TokenTypes.LITERAL, Literals.PACKAGE);
-						readPath(packageBlack);
-						readBlock(packageBlack);
-						fillBlock.subBlocks.push(packageBlack);
+						var packageBlock:BlockContainerVO = new BlockContainerVO(BlockTypes.PACKAGE);
+						readStrictToken(packageBlock, TokenTypes.LITERAL, Literals.PACKAGE);
+						readPath(packageBlock);
+						readBlock(packageBlock);
+						fillBlock.subBlocks.push(packageBlock);
 						break;
 					case Literals.IMPORT:
 						clearStack(fillBlock);
-						var importBlack:BlockContainerVO = new BlockContainerVO(BlockTypes.IMPORT);
-						writeSingeToken(importBlack, TokenTypes.LITERAL, Literals.IMPORT);
-						readPath(importBlack);
-						fillBlock.subBlocks.push(importBlack);
+						var importBlock:BlockContainerVO = new BlockContainerVO(BlockTypes.IMPORT);
+						readStrictToken(importBlock, TokenTypes.LITERAL, Literals.IMPORT);
+						readPath(importBlock);
+						fillBlock.subBlocks.push(importBlock);
 						break;
 					case Literals.CLASS:
-//						subType = BlockTypes.CLASS;
-						tokenStack.push(token);
-						index++;
+						var classBlock:BlockContainerVO = new BlockContainerVO(BlockTypes.CLASS);
+						extractModifiers(fillBlock, classBlock);
+						readStrictToken(importBlock, TokenTypes.LITERAL, Literals.CLASS);
+						readClassHeader(classBlock);
+						readBlock(classBlock);
+						fillBlock.subBlocks.push(classBlock);
 						break;
 					case Literals.VAR:
-//						subType = BlockTypes.VAR;
+//						var varBlock:BlockContainerVO = new BlockContainerVO(BlockTypes.VAR);
+
+//						extractModifiers(fillBlock, varBlock);
+
+
 						tokenStack.push(token);
 						index++;
+
+
 						break;
 					case Literals.CONST:
 //						subType = BlockTypes.CONST;
@@ -136,12 +150,52 @@ public class FileAnilizer {
 	}
 
 	[Inline]
+	private function readClassHeader(classBlock:BlockContainerVO):void {
+		var classHeaderBlock:BlockGroupVO = new BlockGroupVO(null, BlockTypes.CLASS_HEADER);
+		readTillToken(classHeaderBlock, TokenTypes.OPEN_BLOCK);
+		classBlock.subBlocks.push(classHeaderBlock);
+	}
+
+	private function readTillToken(classHeaderBlock:BlockGroupVO, finishTokenType:String):void {
+		while (index < tokenCount) {
+			var token:TokenVO = tokens[index];
+			if (token.type != finishTokenType) {
+				classHeaderBlock.subTokns.push(token);
+			} else {
+			    break;
+			}
+			index++;
+		}
+	}
+
+	[Inline]
+	private function extractModifiers(parentBlock:BlockContainerVO, childBlock:BlockContainerVO):void {
+		var parentTokens:Vector.<TokenVO> = new <TokenVO>[];
+		var modifierTokens:Vector.<TokenVO> = new <TokenVO>[];
+		while (tokenStack.length) {
+			var lastToken:TokenVO = tokenStack.pop();
+			if (isBlank(lastToken.type) || lastToken.kind == TokenKind.MODIFIER) {
+				modifierTokens.unshift(lastToken);
+			} else {
+				tokenStack.push(lastToken);
+				break;
+			}
+		}
+		//
+		clearStack(parentBlock);
+		//
+		if (modifierTokens.length) {
+			childBlock.subBlocks.push(new BlockGroupVO(modifierTokens, BlockTypes.MODIFIERS));
+		}
+	}
+
+	[Inline]
 	private function readBlock(blockContainerVO:BlockContainerVO):void {
-		writeSingeToken(blockContainerVO, TokenTypes.OPEN_BLOCK);
+		readStrictToken(blockContainerVO, TokenTypes.OPEN_BLOCK);
 		var block:BlockContainerVO = new BlockContainerVO(BlockTypes.BLOCK)
 		analizeBlock(block);
 		blockContainerVO.subBlocks.push(block);
-		writeSingeToken(blockContainerVO, TokenTypes.CLOSE_BLOCK);
+		readStrictToken(blockContainerVO, TokenTypes.CLOSE_BLOCK);
 	}
 
 	[Inline]
@@ -167,7 +221,7 @@ public class FileAnilizer {
 	}
 
 	[Inline]
-	private function writeSingeToken(blockContainerVO:BlockContainerVO, expectedType:String = null, expectedValue:String = null):void {
+	private function readStrictToken(blockContainerVO:BlockContainerVO, expectedType:String = null, expectedValue:String = null):void {
 		var token:TokenVO = tokens[index];
 		if (expectedType) {
 			if (token.type != expectedType) {
@@ -181,6 +235,25 @@ public class FileAnilizer {
 		}
 		blockContainerVO.subBlocks.push(new BlockTokenVO(token));
 		index++;
+	}
+
+	[Inline]
+	private function readNextToken(blockContainerVO:BlockContainerVO, expectedType:String = null, expectedValue:String = null):Boolean {
+		var retVal:Boolean = false;
+		var token:TokenVO = tokens[index];
+		while (isBlank(token.type)) {
+			blockContainerVO.subBlocks.push(new BlockTokenVO(token));
+			index++;
+			token = tokens[index];
+		}
+		if (expectedType == null || token.type == expectedType) {
+			if (expectedValue == null || token.value == expectedValue) {
+				retVal = true;
+				blockContainerVO.subBlocks.push(new BlockTokenVO(token));
+				index++;
+			}
+		}
+		return retVal;
 	}
 
 	[Inline]
@@ -262,7 +335,7 @@ public class FileAnilizer {
 	}
 
 	[Inline]
-	private function readTillTheEnd(blockContainerVO:BlockContainerVO):void {
+	private function readTillTheFileEnd(blockContainerVO:BlockContainerVO):void {
 		var leftOvers:BlockContainerVO = new BlockContainerVO(BlockTypes.UNDEFINED);
 		while (index < tokenCount) {
 			leftOvers.subBlocks.push(tokens[index]);
