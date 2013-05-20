@@ -65,7 +65,6 @@ public class FileTokenizer {
 		nextChar = "";
 		prevChar = "";
 
-
 		while (index < length) {
 
 			readChar();
@@ -154,7 +153,6 @@ public class FileTokenizer {
 					tokenType = TokenTypes.MORE;
 //					tokenKind = TokenKind.GROUP_CLOSE;
 				}
-
 			} else if (char == "=") {
 				if (nextChar == "=") {
 					tokenType = TokenTypes.EQUALS;
@@ -165,8 +163,16 @@ public class FileTokenizer {
 				tokenType = TokenTypes.DOT;
 			} else if (char == ",") {
 				tokenType = TokenTypes.COMMA;
-			} else if (char == "+" || char == "-" || char == "/" || char == "*" || char == "&") {
-				tokenType = TokenTypes.OPERATOR;
+			} else if (char == "+") {
+				tokenType = TokenTypes.PLUS;
+			} else if (char == "-") {
+				tokenType = TokenTypes.MINUS;
+			} else if (char == "/") {
+				tokenType = TokenTypes.DIV;
+			} else if (char == "%") {
+				tokenType = TokenTypes.MOD;
+			} else if (char == "*") {
+				tokenType = TokenTypes.MULT;
 			} else if (char == "|") {
 				tokenType = TokenTypes.OR;
 			} else if (char == "&") {
@@ -174,12 +180,10 @@ public class FileTokenizer {
 			} else if (char == ";") {
 				tokenType = TokenTypes.END;
 			}
-
 			if (tokenData != "") {
 				tokens.push(new TokenVO(tokenKind, tokenType, tokenData, tokenKeyWord));
 			}
 		}
-
 		for (var i:int = 0; i < tokens.length; i++) {
 			debugLabel.text += tokens[i].type + ":" + tokens[i].value + ((tokens[i].keyWord) ? "\t\t\t" + tokens[i].keyWord : "") + "\n";
 		}

@@ -1,6 +1,4 @@
 package constants {
-import flash.utils.Dictionary;
-
 public class TokenTypes {
 
 	public static const UNDEFINED:String = ">>>UNDEFINED";
@@ -22,14 +20,18 @@ public class TokenTypes {
 	public static const ASSIGN:String = ">>>ASSIGN";
 	public static const DOT:String = ">>>DOT";
 	public static const COMMA:String = ">>>COMMA";
-	public static const OPERATOR:String = ">>>OPERATOR";
+
 	public static const OR:String = ">>>OR";
 	public static const AND:String = ">>>AND";
 	public static const OPEN:String = ">>>OPEN";
 	public static const CLOSE:String = ">>>CLOSE";
 	public static const END:String = ">>>END";
 
-
+	public static const PLUS:String = ">>>PLUS";
+	public static const MINUS:String = ">>>MINUS";
+	public static const DIV:String = ">>>DIV";
+	public static const MOD:String = ">>>MOD";
+	public static const MULT:String = ">>>MULT";
 
 
 }

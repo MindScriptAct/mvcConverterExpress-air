@@ -76,14 +76,16 @@ public class FileAnilizer {
 						clearStack(fillBlock);
 						var packageBlack:BlockContainerVO = new BlockContainerVO(BlockTypes.PACKAGE);
 						writeSingeToken(packageBlack, TokenTypes.LITERAL, Literals.PACKAGE);
-						readPackageHeader(packageBlack);
+						readPath(packageBlack);
 						readBlock(packageBlack);
 						fillBlock.subBlocks.push(packageBlack);
 						break;
 					case Literals.IMPORT:
-//						subType = BlockTypes.IMPORT;
-						tokenStack.push(token);
-						index++;
+						clearStack(fillBlock);
+						var importBlack:BlockContainerVO = new BlockContainerVO(BlockTypes.IMPORT);
+						writeSingeToken(importBlack, TokenTypes.LITERAL, Literals.IMPORT);
+						readPath(importBlack);
+						fillBlock.subBlocks.push(importBlack);
 						break;
 					case Literals.CLASS:
 //						subType = BlockTypes.CLASS;
@@ -182,47 +184,71 @@ public class FileAnilizer {
 	}
 
 	[Inline]
-	private function readPackageHeader(blockContainerVO:BlockContainerVO):void {
+	private function readPath(blockContainerVO:BlockContainerVO):void {
 		// simle literals, dot, literals, dot literal,... block open
-		var packageTokens:Vector.<TokenVO> = new <TokenVO>[];
+		var pathTokens:Vector.<TokenVO> = new <TokenVO>[];
+
 		var isLiteralStep:Boolean = true;
 		var isDone:Boolean = false;
-		while (index < tokenCount) {
-			var token:TokenVO = tokens[index];
-			if (isBlank(token.type)) {
-				// all fine.. just add those.
-			} else {
-				if (token.type == TokenTypes.OPEN_BLOCK) {
-					isDone = true;
-				} else {
-					if (isLiteralStep) {
-						if (token.type == TokenTypes.LITERAL) {
-							isLiteralStep = false;
-						} else {
-							throw  Error("Name expected here in package declaration.");
-						}
+
+		while (!isDone) {
+
+			addBlanksToArray(pathTokens);
+			if (index < tokenCount) {
+
+				var token:TokenVO = tokens[index];
+
+				if (isLiteralStep) {
+
+					if (token.type == TokenTypes.LITERAL) {
+						isLiteralStep = false;
+					} else if (token.type == TokenTypes.MULT) {
+						// add *
+						pathTokens.push(token);
+						index++;
+						isDone = true;
 					} else {
-						if (token.type == TokenTypes.DOT) {
-							isLiteralStep = true;
-						} else {
-							throw  Error("Dot expected here in package declaration.");
-						}
+						isDone = true;
+					}
+				} else {
+
+					if (token.type == TokenTypes.DOT) {
+						isLiteralStep = true;
+					} else {
+						isDone = true;
 					}
 				}
+
+			} else {
+				isDone = true;
 			}
 
 			if (isDone) {
-				if (packageTokens.length) {
-					blockContainerVO.subBlocks.push(new BlockGroupVO(packageTokens, BlockTypes.PATH));
+				addBlanksToArray(pathTokens);
+				if (pathTokens.length) {
+					blockContainerVO.subBlocks.push(new BlockGroupVO(pathTokens, BlockTypes.PATH));
 				}
-				return;
 			} else {
-				packageTokens.push(token);
+				pathTokens.push(token);
 				index++;
 			}
 		}
 	}
 
+	[Inline]
+	private function addBlanksToArray(groupTokens:Vector.<TokenVO>):void {
+		while (index < tokenCount) {
+			var token:TokenVO = tokens[index];
+			if (isBlank(token.type)) {
+				groupTokens.push(token);
+				index++
+			} else {
+				break;
+			}
+		}
+	}
+
+	[Inline]
 	private function isBlank(type:String):Boolean {
 		return type == TokenTypes.WHITE_SPACE || type == TokenTypes.LINE_COMMENT || type == TokenTypes.BLOCK_COMMENT;
 	}
