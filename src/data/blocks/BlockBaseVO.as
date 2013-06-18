@@ -1,4 +1,4 @@
-package data {
+package data.blocks {
 import constants.BlockTypes;
 
 import data.TokenVO;
@@ -20,6 +20,9 @@ public class BlockBaseVO {
 		return null;
 	}
 
+	public function fillTokens(tokens:Vector.<TokenVO>):void {
+		throw Error("Override me!");
+	}
 
 }
 }

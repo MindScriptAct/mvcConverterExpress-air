@@ -33,6 +33,10 @@ public class TokenTypes {
 	public static const MOD:String = ">>>MOD";
 	public static const MULT:String = ">>>MULT";
 
+	public static const REPLACE:String = "!!!!> REPLACE";
+
+	public static const COLON:String = ">>>COLON";
+
 
 }
 }

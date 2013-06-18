@@ -1,4 +1,6 @@
-package data {
+package data.blocks {
+import data.*;
+
 import constants.BlockTypes;
 
 public class BlockTokenVO extends BlockBaseVO {
@@ -17,5 +19,10 @@ public class BlockTokenVO extends BlockBaseVO {
 	override public function debugBlock(tab:String):String {
 		return tab + "+" + token.type + "\t\t\t\t" + token.keyWord + "\t\t\t\t\t\t" + token.value + "\n";
 	}
+
+	override public function fillTokens(tokens:Vector.<TokenVO>):void {
+		tokens.push(token);
+	}
+
 }
 }

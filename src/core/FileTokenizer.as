@@ -183,6 +183,8 @@ public class FileTokenizer {
 				tokenType = TokenTypes.AND;
 			} else if (char == ";") {
 				tokenType = TokenTypes.END;
+			} else if (char == ":") {
+				tokenType = TokenTypes.COLON;
 			}
 			if (tokenData != "") {
 				tokens.push(new TokenVO(tokenKind, tokenType, tokenData, tokenKeyWord));
@@ -220,12 +222,12 @@ public class FileTokenizer {
 
 	[Inline]
 	private function get isNextNumberOrDot():Boolean {
-		return nextCharCode >= 48 && nextCharCode <= 58 || nextChar == ".";
+		return nextCharCode >= 48 && nextCharCode < 58 || nextChar == ".";
 	}
 
 	[Inline]
 	private function get isNextNumber():Boolean {
-		return nextCharCode >= 48 && nextCharCode <= 58;
+		return nextCharCode >= 48 && nextCharCode < 58;
 	}
 
 	[Inline]

@@ -13,25 +13,36 @@ public class FileLine extends Sprite {
 
 	public var file:File;
 
-	public function FileLine(file:File, tab:String) {
+	private var fileLabel:Text;
+
+	public function FileLine() {
 		//var nameSpit:Array = file.nativePath.split(textLabel.text)
 
-		this.file = file;
-
-		var fileLabel:Text = new Text(this, 30, 0, "");
-		fileLabel.width = 800;
+		fileLabel = new Text(this, 30, 0, "");
+		fileLabel.width = 700;
 		fileLabel.height = 20;
+		fileLabel.mouseEnabled = false;
+		fileLabel.mouseChildren = false;
 
-		var nameSpit:Array = file.nativePath.split(homePath);
+		analizeButton = new PushButton(this, 700, 0, "Anilize");
 
-		if (file.isDirectory) {
-			fileLabel.text += tab + "+-" + nameSpit[1] + "\n";
-		} else {
-			fileLabel.text += tab + " -" + nameSpit[1] + "\n";
+	}
+
+	public function setData(file:File, tab:String):void {
+		this.file = file;
+		fileLabel.text = "";
+		if (file) {
+
+//		var nameSpit:Array = file.nativePath.split(homePath);
+
+			if (file.isDirectory) {
+//			fileLabel.text += tab + "+-" + nameSpit[1] + "\n";
+				fileLabel.text += tab + "#    " + file.name + "\n";
+			} else {
+//			fileLabel.text += tab + " -" + nameSpit[1] + "\n";
+				fileLabel.text += tab + "     " + file.name + "\n";
+			}
 		}
-
-		analizeButton = new PushButton(this, 800, 0, "Anilize");
-
 	}
 
 }

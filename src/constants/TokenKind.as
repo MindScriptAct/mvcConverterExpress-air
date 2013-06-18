@@ -14,6 +14,8 @@ public class TokenKind {
 
 	public static const MODIFIER:int = kindCount++;
 
+	public static const CUSTOME:int = kindCount++;
+
 
 
 
