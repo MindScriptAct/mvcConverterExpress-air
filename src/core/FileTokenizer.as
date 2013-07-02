@@ -26,6 +26,7 @@ public class FileTokenizer {
 	private var charCode:int;
 	private var nextChar:String;
 	private var nextCharCode:int;
+
 	private var prevChar:String;
 
 	private var tokenKind:int;
@@ -41,19 +42,26 @@ public class FileTokenizer {
 
 
 	public function tokenizeFile(file:File):Vector.<TokenVO> {
-		var localFileStream:FileStream = new FileStream();
-		localFileStream.open(file, FileMode.UPDATE);
-
 		tokens = new <TokenVO>[];
 
-		var fileText:String = localFileStream.readUTFBytes(file.size);
+		var localFileStream:FileStream = new FileStream();
+		try {
+			localFileStream.open(file, FileMode.UPDATE);
+		} catch (error:Error) {
+			trace("WARINING : failed to read the file: ", file.nativePath, error);
+			tokens = null;
+		}
 
-		debugLabel.text += "//==================\n// tokenize\n//==================\n";
+		if (tokens) {
 
-		analizeText(fileText);
+			var fileText:String = localFileStream.readUTFBytes(file.size);
 
-		localFileStream.close();
+			debugLabel.text += "//==================\n// tokenize\n//==================\n";
 
+			analizeText(fileText);
+
+			localFileStream.close();
+		}
 		return tokens;
 	}
 
@@ -63,8 +71,9 @@ public class FileTokenizer {
 		this.fileText = fileText;
 		index = 0;
 		length = fileText.length;
-		nextChar = "";
-		prevChar = "";
+		prevChar = null;
+		char = null;
+		nextChar = null;
 
 		while (index < length) {
 
@@ -77,17 +86,19 @@ public class FileTokenizer {
 
 			if (char == "/") {
 				if (nextChar == "/") {
-					tokenType = TokenTypes.LINE_COMMENT;
+					tokenType = TokenTypes.COMMENT;
 					while (notEnd && (nextChar != "\n" && nextChar != "\r")) {
 						readWriteChar();
 					}
 				} else if (nextChar == "*") {
-					tokenType = TokenTypes.BLOCK_COMMENT;
+					tokenType = TokenTypes.COMMENT;
 
 					while (notEnd && (char != "*" || nextChar != "/")) {
 						readWriteChar();
 					}
-					readWriteChar();
+					if (nextChar == "/") {
+						readWriteChar();
+					}
 				}
 			} else if (whiteSpace) {
 				tokenType = TokenTypes.WHITE_SPACE;
@@ -121,7 +132,7 @@ public class FileTokenizer {
 				} else if (Literals.MODIFIER_LITERALS[tokenData] == true) {
 					tokenKind = TokenKind.MODIFIER;
 				}
-				if (Literals.ALL_LITERALS[tokenData] != null) {
+				if (Literals.ALL_LITERALS.propertyIsEnumerable(tokenData)) {
 					tokenKeyWord = Literals.ALL_LITERALS[tokenData]
 				}
 
@@ -146,6 +157,17 @@ public class FileTokenizer {
 			} else if (char == "<") {
 				if (nextChar == "=") {
 					tokenType = TokenTypes.LESSEQUALS;
+				} else if (nextChar == "!" && charFromIndexAt(2) == "-" && charFromIndexAt(3) == "-") {
+					tokenType = TokenTypes.COMMENT;
+					while (notEnd && (char != "-" || nextChar != "-" || charFromIndexAt(2) != ">" )) {
+						readWriteChar();
+					}
+					if (char == "-") {
+						readWriteChar();
+					}
+					if (char == "-") {
+						readWriteChar();
+					}
 				} else {
 					tokenType = TokenTypes.LESS;
 //					tokenKind = TokenKind.GROUP_OPEN;
@@ -153,6 +175,7 @@ public class FileTokenizer {
 			} else if (char == ">") {
 				if (nextChar == "=") {
 					tokenType = TokenTypes.MOREEQUALS;
+
 				} else {
 					tokenType = TokenTypes.MORE;
 //					tokenKind = TokenKind.GROUP_CLOSE;
@@ -194,6 +217,14 @@ public class FileTokenizer {
 			for (var i:int = 0; i < tokens.length; i++) {
 				debugLabel.text += tokens[i].type + ":" + tokens[i].value + ((tokens[i].keyWord) ? "\t\t\t" + tokens[i].keyWord : "") + "\n";
 			}
+		}
+	}
+
+	private function charFromIndexAt(posShift:int):String {
+		if (index + posShift - 1 < length) {
+			return fileText.charAt(index + posShift);
+		} else {
+			return null;
 		}
 	}
 
@@ -244,6 +275,9 @@ public class FileTokenizer {
 		if (index < length) {
 			nextChar = fileText.charAt(index + 1);
 			nextCharCode = fileText.charCodeAt(index + 1);
+		} else {
+			nextChar = null;
+			nextCharCode = -1;
 		}
 		index++;
 	}

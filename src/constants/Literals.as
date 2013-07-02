@@ -83,6 +83,9 @@ public class Literals {
 	// init
 	public static function initLiteral():void {
 
+		// overide object dynamic getters.
+
+
 		ALL_LITERALS[BREAK] = "BREAK";
 		ALL_LITERALS[CASE] = "CASE";
 		ALL_LITERALS[CONTINUE] = "CONTINUE";

@@ -1,10 +1,13 @@
 package {
 import com.bit101.components.HScrollBar;
 import com.bit101.components.PushButton;
+import com.bit101.components.RadioButton;
 import com.bit101.components.ScrollBar;
 import com.bit101.components.Text;
 import com.bit101.components.TextArea;
 import com.bit101.components.VScrollBar;
+
+import constants.AppConstants;
 
 import constants.BlockTypes;
 
@@ -25,6 +28,11 @@ import flash.events.MouseEvent;
 import flash.filesystem.File;
 import flash.filesystem.FileMode;
 import flash.filesystem.FileStream;
+import flash.utils.Dictionary;
+
+import ruleSets.RuleSet;
+
+import ruleSets.RuleSetPureMvc;
 
 import view.FileLine;
 
@@ -36,6 +44,7 @@ public class Main extends Sprite {
 	private var mainSrcDir:File;
 
 	private var textLabel:Text;
+	private var progressLabel:Text;
 	private var debugLabel:TextArea;
 
 	private var resultContainer:Sprite;
@@ -43,6 +52,9 @@ public class Main extends Sprite {
 
 	private var filescroller:VScrollBar;
 	private var handleFileIndex:int = int.MAX_VALUE;
+	private var handledItemCount:int;
+
+	static public var ruleSet:RuleSet;
 
 	[SWF(width="1800", height="600", frameRate="30")]
 	public function Main():void {
@@ -54,10 +66,14 @@ public class Main extends Sprite {
 		textLabel.width = 800;
 		textLabel.height = 20;
 
+		progressLabel = new Text(this, 2, 25, "...");
+		progressLabel.width = 150;
+		progressLabel.height = 20;
+
 		var pushButton:PushButton = new PushButton(this, 805, 2, "browse");
 		pushButton.addEventListener(MouseEvent.CLICK, handleBrowse);
 
-		var analizeAllButton:PushButton = new PushButton(this, 600, 22, "Analise all");
+		var analizeAllButton:PushButton = new PushButton(this, 600, 22, "process all");
 		analizeAllButton.addEventListener(MouseEvent.CLICK, analizeAllFiles)
 
 
@@ -94,6 +110,21 @@ public class Main extends Sprite {
 		CONFIG::debug {
 			file_select();
 		}
+
+
+		new RadioButton(this, 200, 30, "blank", false, handleRulesetBlank);
+		new RadioButton(this, 250, 30, "pureMvc>mvcExpress", true, handleRulesetMvcExpress);
+		//new RadioButton(this, 300, 30, "comunaciation", true, handleRulesetComunication);
+
+		ruleSet = new RuleSetPureMvc();
+	}
+
+	private function handleRulesetBlank(event:Event):void {
+		ruleSet = new RuleSet();
+	}
+
+	private function handleRulesetMvcExpress(event:Event):void {
+		ruleSet = new RuleSetPureMvc();
 	}
 
 	private function handleFrameTick(event:Event):void {
@@ -101,6 +132,13 @@ public class Main extends Sprite {
 			var fileVo:FileVO = currentFiles[handleFileIndex];
 			analizeFile(fileVo.file);
 			handleFileIndex++;
+
+
+			if (handleFileIndex < fileCount) {
+				progressLabel.text = "working... " + handleFileIndex + "/" + fileCount;
+			} else {
+				progressLabel.text = "done.  " + fileCount;
+			}
 		}
 	}
 
@@ -129,8 +167,10 @@ public class Main extends Sprite {
 		CONFIG::debug {
 			if (mainSrcDir == null) {
 //				file = File.applicationStorageDirectory.resolvePath("C:/aTestSrc");
+
 //				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/unpureDemo/src");
 				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/!pirateSpace/production/src/main/flash");
+//				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/!pirateSpace/production/src/main/flash/net/bigpoint/deprecated/gui/view/components/common/skin");
 			}
 		}
 		if (mainSrcDir.exists) {
@@ -139,7 +179,11 @@ public class Main extends Sprite {
 
 			FileLine.homePath = mainSrcDir.nativePath;
 
+			handledItemCount = 0;
+
 			handleMainDir(mainSrcDir);
+
+			progressLabel.text = "file count:" + currentFiles.length;
 		}
 
 	}
@@ -217,21 +261,25 @@ public class Main extends Sprite {
 
 					var fileTokenizer:FileTokenizer = new FileTokenizer(debugLabel);
 					var tokens:Vector.<TokenVO> = fileTokenizer.tokenizeFile(targetFile);
-					var fileAnalivel:FileParser = new FileParser(debugLabel);
+					if (tokens) {
+						var fileAnalivel:FileParser = new FileParser(debugLabel);
 
-					var output:String = fileAnalivel.analizeTokens(tokens);
+						var output:String = fileAnalivel.analizeTokens(tokens);
 
-					// do save..
-					if (1) {
+						// do save..
+						if (1) {
 
-						var writeStream:FileStream = new FileStream();
-						writeStream.open(targetFile, FileMode.WRITE);
+							var writeStream:FileStream = new FileStream();
+							try {
+								writeStream.open(targetFile, FileMode.WRITE);
 
-						writeStream.writeUTFBytes(output);
-						writeStream.close();
-
+								writeStream.writeUTFBytes(output);
+								writeStream.close();
+							} catch (error:Error) {
+								trace("Warning: failed to write changes: ", targetFile.nativePath, error);
+							}
+						}
 					}
-
 
 				} else {
 					debugLabel.text = "Only as and mxml files suported.";

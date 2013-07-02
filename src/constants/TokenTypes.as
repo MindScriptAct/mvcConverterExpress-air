@@ -2,8 +2,14 @@ package constants {
 public class TokenTypes {
 
 	public static const UNDEFINED:String = ">>>UNDEFINED";
-	public static const LINE_COMMENT:String = ">>>LINE_COMMENT";
-	public static const BLOCK_COMMENT:String = ">>>BLOCK_COMMENT";
+
+//	public static const LINE_COMMENT:String = ">>>LINE_COMMENT";
+//	public static const BLOCK_COMMENT:String = ">>>BLOCK_COMMENT";
+//	public static const XML_COMMENT:String = ">>>XML_COMMENT";
+
+	public static const COMMENT:String = ">>>COMMENT";
+
+
 	public static const WHITE_SPACE:String = ">>>WHITE_SPACE";
 	public static const STRING:String = ">>>STRING";
 	public static const NUMBER:String = ">>>NUMBER";

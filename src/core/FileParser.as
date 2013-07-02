@@ -11,10 +11,13 @@ import data.blocks.BlockBaseVO;
 import data.blocks.BlockContainerVO;
 import data.blocks.BlockGroupVO;
 import data.blocks.BlockTokenVO;
+import data.blocks.BlockTokenVO;
 import data.TokenVO;
 import data.blocks.dedicated.ClassBlockVO;
 import data.blocks.dedicated.FunctionBlockVO;
 import data.blocks.dedicated.PathBlockVO;
+
+import flash.utils.Dictionary;
 
 import mx.collections.CursorBookmark;
 
@@ -33,10 +36,6 @@ public class FileParser {
 
 	private var tokenStack:Vector.<TokenVO>;
 
-
-	private var tempBlock:BlockBaseVO;
-
-
 	private var ruleSet:RuleSet;
 
 	private var currentClassExtend:String = "";
@@ -44,8 +43,7 @@ public class FileParser {
 	public function FileParser(debugLabel:TextArea) {
 		this.debugLabel = debugLabel;
 
-		ruleSet = new RuleSetPureMvc();
-//		ruleSet = new RuleSet();
+		ruleSet = Main.ruleSet;
 	}
 
 
@@ -212,8 +210,11 @@ public class FileParser {
 		/////////////
 		// added readTillToken(classHeaderBlock, TokenTypes.OPEN_BLOCK) and analized for extends.
 		/////////////
-		var extendClassToken:TokenVO;
+		var extendClassToken:TokenVO = null;
+		var implementsLiteralToken:TokenVO = null;
+		var implementClassTokens:Array = [];
 		var useNextLiteralAsExtendClass:Boolean = false;
+		var useNextLiteralAsImplementInterface:Boolean = false;
 		/////////////
 		while (index < tokenCount) {
 			var token:TokenVO = tokens[index];
@@ -232,6 +233,25 @@ public class FileParser {
 							currentClassExtend = token.value;
 						}
 					}
+
+					if (token.value == Literals.IMPLEMENTS) {
+						useNextLiteralAsImplementInterface = true;
+						implementsLiteralToken = token;
+					} else {
+						if (useNextLiteralAsImplementInterface) {
+							implementClassTokens.push(token);
+						}
+
+					}
+				}
+				if (useNextLiteralAsImplementInterface) {
+					if (token.type != TokenTypes.LITERAL &&
+							token.type != TokenTypes.COMMA &&
+							token.type != TokenTypes.COMMENT &&
+							token.type != TokenTypes.WHITE_SPACE) {
+
+						useNextLiteralAsImplementInterface = false;
+					}
 				}
 				/////////////
 				//
@@ -242,6 +262,8 @@ public class FileParser {
 		}
 
 		classBlock.extendClassToken = extendClassToken;
+		classBlock.implementsLiteralToken = implementsLiteralToken;
+		classBlock.implementClassTokens = implementClassTokens;
 		/////////////
 
 		classBlock.subBlocks.push(classHeaderBlock);
@@ -360,35 +382,39 @@ public class FileParser {
 
 	[Inline]
 	private function readStrictToken(blockContainerVO:BlockContainerVO, expectedType:String = null, expectedValue:String = null):void {
-		var token:TokenVO = tokens[index];
-		if (expectedType) {
-			if (token.type != expectedType) {
-				throw  Error("Expected type " + expectedType + " but instead it is :" + token.type);
+		if (index < tokens.length) {
+			var token:TokenVO = tokens[index];
+			if (expectedType) {
+				if (token.type != expectedType) {
+					throw  Error("Expected type " + expectedType + " but instead it is :" + token.type);
+				}
 			}
-		}
-		if (expectedValue) {
-			if (token.value != expectedValue) {
-				throw  Error("Expected value " + expectedValue + " but instead it is :" + token.value);
+			if (expectedValue) {
+				if (token.value != expectedValue) {
+					throw  Error("Expected value " + expectedValue + " but instead it is :" + token.value);
+				}
 			}
+			blockContainerVO.subBlocks.push(new BlockTokenVO(token));
+			index++;
 		}
-		blockContainerVO.subBlocks.push(new BlockTokenVO(token));
-		index++;
 	}
 
 	[Inline]
 	private function readNextToken(blockContainerVO:BlockContainerVO, expectedType:String = null, expectedValue:String = null):Boolean {
 		var retVal:Boolean = false;
-		var token:TokenVO = tokens[index];
-		while (isBlank(token.type)) {
-			blockContainerVO.subBlocks.push(new BlockTokenVO(token));
-			index++;
-			token = tokens[index];
-		}
-		if (expectedType == null || token.type == expectedType) {
-			if (expectedValue == null || token.value == expectedValue) {
-				retVal = true;
+		if (index < tokens.length) {
+			var token:TokenVO = tokens[index];
+			while (isBlank(token.type)) {
 				blockContainerVO.subBlocks.push(new BlockTokenVO(token));
 				index++;
+				token = tokens[index];
+			}
+			if (expectedType == null || token.type == expectedType) {
+				if (expectedValue == null || token.value == expectedValue) {
+					retVal = true;
+					blockContainerVO.subBlocks.push(new BlockTokenVO(token));
+					index++;
+				}
 			}
 		}
 		return retVal;
@@ -466,7 +492,7 @@ public class FileParser {
 
 	[Inline]
 	private function isBlank(type:String):Boolean {
-		return type == TokenTypes.WHITE_SPACE || type == TokenTypes.LINE_COMMENT || type == TokenTypes.BLOCK_COMMENT;
+		return type == TokenTypes.WHITE_SPACE || type == TokenTypes.COMMENT;
 	}
 
 	[Inline]
@@ -498,7 +524,7 @@ public class FileParser {
 		var newPath:String = ruleSet.imports_replace[importBlock.path];
 		if (newPath) {
 
-			trace("Path found : " + importBlock.path);
+//			trace("Path found : " + importBlock.path);
 
 			var pathBlock:BlockGroupVO = importBlock.subBlocks[1] as BlockGroupVO;
 
@@ -514,6 +540,16 @@ public class FileParser {
 			newPathTokens.push(new TokenVO(TokenKind.CUSTOME, TokenTypes.REPLACE, newPath, null));
 
 			pathBlock.subTokens = newPathTokens;
+		} else if (ruleSet.imports_remove[importBlock.path]) {
+
+			var importToken:BlockTokenVO = importBlock.subBlocks[0] as BlockTokenVO;
+			importToken.token.value = "";
+			importToken.token.kind = TokenKind.CUSTOME;
+			importToken.token.type = TokenTypes.REPLACE;
+
+			var pathBlock:BlockGroupVO = importBlock.subBlocks[1] as BlockGroupVO;
+			var newPathTokens:Vector.<TokenVO> = new <TokenVO>[];
+			pathBlock.subTokens = newPathTokens;
 		}
 	}
 
@@ -522,18 +558,42 @@ public class FileParser {
 
 		if (classBlock.extendClassToken) {
 
-			var replaceValue:String = ruleSet.literals_replace[classBlock.extendClassToken.value];
+			var className:String = classBlock.extendClassToken.value;
+
+			var replaceValue:String = ruleSet.literal_replace[className];
 			if (replaceValue) {
 				classBlock.extendClassToken.value = replaceValue;
 				classBlock.extendClassToken.kind = TokenKind.CUSTOME;
 				classBlock.extendClassToken.type = TokenTypes.REPLACE
+			}
 
+			var replaceImports:Dictionary = ruleSet.class_import_replace[className];
+			if (replaceImports) {
+				if (classBlock.implementClassTokens) {
+					for (var key:String in replaceImports) {
+						for (var i:int = 0; i < classBlock.implementClassTokens.length; i++) {
+							if (classBlock.implementClassTokens[i].value == key) {
+								if (classBlock.implementClassTokens.length == 1) {
+									classBlock.implementsLiteralToken.value = "";
+									classBlock.implementsLiteralToken.kind = TokenKind.CUSTOME;
+									classBlock.implementsLiteralToken.type = TokenTypes.REPLACE;
+								} else if (i == 0) {
+									// TODO : remove COMMA after.
+								} else {
+									// TODO : remove COMMA before.
+								}
+								classBlock.implementClassTokens[i].value = replaceImports[key];
+								classBlock.implementClassTokens[i].kind = TokenKind.CUSTOME;
+								classBlock.implementClassTokens[i].type = TokenTypes.REPLACE
+							}
+						}
+					}
+				}
 			}
 		}
 	}
 
 	private function handleFunctionFound(functionBlock:FunctionBlockVO):void {
-		trace(functionBlock);
 		if (ruleSet.function_modifier_replace[currentClassExtend]) {
 			var replaceData:Array = ruleSet.function_modifier_replace[currentClassExtend][functionBlock.name]
 		}
@@ -573,13 +633,16 @@ public class FileParser {
 			var token:TokenVO = tokens[i];
 
 			if (token.type == TokenTypes.LITERAL) {
-				var replaceValue:String = ruleSet.literals_replace[token.value];
-				if (replaceValue) {
+				if (ruleSet.literal_replace.propertyIsEnumerable(token.value)) {
+					var replaceValue:String = ruleSet.literal_replace[token.value];
 					token.value = replaceValue;
 					token.kind = TokenKind.CUSTOME;
 					token.type = TokenTypes.REPLACE
 				}
+
 			}
+
+
 		}
 	}
 
