@@ -3,10 +3,10 @@ import constants.Literals;
 
 import flash.utils.Dictionary;
 
-public class RuleSetPureMvc extends RuleSet {
+public class RuleSetUnpureMvc extends RuleSet {
 
 
-	public function RuleSetPureMvc() {
+	public function RuleSetUnpureMvc() {
 
 		imports_replace["org.puremvc.as3.patterns.facade.Facade"] = "org.mvcexpress.extension.unpuremvc.patterns.facade.UnpureFacade";
 		imports_replace["org.puremvc.as3.patterns.facade.*"] = "org.mvcexpress.extension.unpuremvc.patterns.facade.UnpureFacade";
@@ -39,6 +39,7 @@ public class RuleSetPureMvc extends RuleSet {
 
 		literal_replace["Facade"] = "UnpureFacade"; // check imports.
 		literal_replace["IFacade"] = "UnpureFacade"; // check imports.
+
 		literal_replace["Mediator"] = "UnpureMediator"; // check import.
 		literal_replace["Proxy"] = "UnpureProxy"; // check import.
 

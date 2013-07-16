@@ -10,10 +10,12 @@ import com.bit101.components.VScrollBar;
 import constants.AppConstants;
 
 import constants.BlockTypes;
+import constants.FileStatus;
 
 import constants.Literals;
 
 import core.FileParser;
+import core.FileScaner;
 import core.FileTokenizer;
 
 import data.FileVO;
@@ -31,10 +33,15 @@ import flash.filesystem.FileStream;
 import flash.utils.Dictionary;
 
 import ruleSets.RuleSet;
+import ruleSets.RuleSetMacroCommand;
+import ruleSets.RuleSetMediatorExpresify;
+import ruleSets.RuleSetMvcExpress;
+import ruleSets.RuleSetProxyExpresify;
 
-import ruleSets.RuleSetPureMvc;
+import ruleSets.RuleSetUnpureMvc;
 
 import view.FileLine;
+import view.StatisticPanel;
 
 /**
  * ...
@@ -56,6 +63,21 @@ public class Main extends Sprite {
 
 	static public var ruleSet:RuleSet;
 
+	private var fileScaner:FileScaner = new FileScaner();
+
+	private var statisticPanel:StatisticPanel;
+	private var searchText:Text;
+
+	/////////
+
+	private var currentFiles:Vector.<FileVO>;
+	private var currentFilesStatus:Vector.<int>;
+	private var currentFileId:int = 0;
+	private var fileCount:int = 0;
+	private var pageSize:int = 37;
+	private var autoscroll:int = 0;
+
+
 	[SWF(width="1800", height="600", frameRate="30")]
 	public function Main():void {
 
@@ -66,20 +88,34 @@ public class Main extends Sprite {
 		textLabel.width = 800;
 		textLabel.height = 20;
 
-		progressLabel = new Text(this, 2, 25, "...");
+
+		new PushButton(this, 805, 2, "browse", handleBrowse);
+
+		new PushButton(this, 600, 22, "process all", analizeAllFiles);
+		new PushButton(this, 700, 22, "stop", stopAnilize);
+
+
+		debugLabel = new TextArea(this, 1000, 0, "");
+		debugLabel.width = 800;
+		debugLabel.height = 800;
+
+
+		progressLabel = new Text(this, 840, 75, "...");
 		progressLabel.width = 150;
 		progressLabel.height = 20;
 
-		var pushButton:PushButton = new PushButton(this, 805, 2, "browse");
-		pushButton.addEventListener(MouseEvent.CLICK, handleBrowse);
+		statisticPanel = new StatisticPanel();
+		this.addChild(statisticPanel);
+		statisticPanel.x = 840;
+		statisticPanel.y = 100;
 
-		var analizeAllButton:PushButton = new PushButton(this, 600, 22, "process all");
-		analizeAllButton.addEventListener(MouseEvent.CLICK, analizeAllFiles)
+
+		searchText = new Text(this, 840, 750, "");
+		searchText.width = 150;
+		searchText.height = 20;
+		new PushButton(this, 840, 775, "filter", handleFiltering);
 
 
-		debugLabel = new TextArea(this, 1000, 10, "");
-		debugLabel.width = 800;
-		debugLabel.height = 680;
 //
 //		var test:Window = new Window(this, 10, 120, "Dir content.");
 //		test.addChild(debugLabel);
@@ -99,11 +135,12 @@ public class Main extends Sprite {
 			line.y = lines.length * 20;
 			resultContainer.addChild(line);
 			line.analizeButton.addEventListener(MouseEvent.CLICK, handleAnalizeFile);
+			line.viewButton.addEventListener(MouseEvent.CLICK, handleViewFile);
 			lines.push(line);
 		}
 
 		filescroller = new VScrollBar(this, 810, 50, handleFileSchroll);
-		filescroller.height = 700;
+		filescroller.height = 740;
 
 		this.stage.addEventListener(Event.ENTER_FRAME, handleFrameTick)
 
@@ -112,25 +149,59 @@ public class Main extends Sprite {
 		}
 
 
-		new RadioButton(this, 200, 30, "blank", false, handleRulesetBlank);
-		new RadioButton(this, 250, 30, "pureMvc>mvcExpress", true, handleRulesetMvcExpress);
-		//new RadioButton(this, 300, 30, "comunaciation", true, handleRulesetComunication);
+		new RadioButton(this, 30, 30, "scan(writes to files)", true, handleRulesetScan);
+		new RadioButton(this, 150, 30, "pureMvc>unpureMvc", false, handleRulesetUnpureMvcExpress);
+		new RadioButton(this, 270, 30, "unpureMvc>mvcExpress", false, handleRulesetMvcExpress);
+		new RadioButton(this, 400, 30, "clean proxy", false, handleRulesetProxy);
+		new RadioButton(this, 500, 30, "clean mediator", false, handleRulesetMediator);
 
-		ruleSet = new RuleSetPureMvc();
+		ruleSet = new RuleSet();
+
+
 	}
 
-	private function handleRulesetBlank(event:Event):void {
+	private function handleFiltering(event:Event):void {
+		var searchString:String = String(searchText.text);
+		if (searchString) {
+			for (var i:int = 0; i < currentFiles.length; i++) {
+				if (currentFiles[i].file.name.indexOf(searchString) == -1) {
+					currentFiles.splice(i, 1);
+					currentFilesStatus.splice(i, 1);
+					i--;
+				}
+			}
+		}
+
+		renderFileScroller();
+	}
+
+	private function handleRulesetScan(event:Event):void {
 		ruleSet = new RuleSet();
 	}
 
+	private function handleRulesetUnpureMvcExpress(event:Event):void {
+		ruleSet = new RuleSetUnpureMvc();
+	}
+
 	private function handleRulesetMvcExpress(event:Event):void {
-		ruleSet = new RuleSetPureMvc();
+		ruleSet = new RuleSetMvcExpress();
+	}
+
+	private function handleRulesetProxy(event:Event):void {
+		ruleSet = new RuleSetProxyExpresify();
+	}
+
+	private function handleRulesetMediator(event:Event):void {
+		ruleSet = new RuleSetMediatorExpresify();
 	}
 
 	private function handleFrameTick(event:Event):void {
 		if (handleFileIndex < fileCount) {
 			var fileVo:FileVO = currentFiles[handleFileIndex];
-			analizeFile(fileVo.file);
+			analizeFile(handleFileIndex);
+			if (handleFileIndex >= currentFileId && handleFileIndex < currentFileId + pageSize) {
+				renderFilePage();
+			}
 			handleFileIndex++;
 
 
@@ -139,11 +210,26 @@ public class Main extends Sprite {
 			} else {
 				progressLabel.text = "done.  " + fileCount;
 			}
+			if (autoscroll + pageSize < handleFileIndex ) {
+				autoscrollTo(autoscroll + pageSize);
+			}
 		}
 	}
 
 	private function analizeAllFiles(event:MouseEvent):void {
 		handleFileIndex = 0;
+		autoscrollTo(0);
+	}
+
+	private function autoscrollTo(scrollTo:int):void {
+		autoscroll = scrollTo;
+		currentFileId = autoscroll;
+		filescroller.value = autoscroll;
+		renderFilePage();
+	}
+
+	private function stopAnilize(event:MouseEvent):void {
+		handleFileIndex = int.MAX_VALUE;
 	}
 
 	private function handleFileSchroll(event:Event):void {
@@ -157,6 +243,9 @@ public class Main extends Sprite {
 		handleFileIndex = int.MAX_VALUE;
 
 		mainSrcDir = new File();
+		if (textLabel.text) {
+			mainSrcDir.nativePath = textLabel.text;
+		}
 		mainSrcDir.addEventListener(Event.SELECT, file_select);
 		mainSrcDir.browseForDirectory("Please select a directory...");
 
@@ -169,7 +258,7 @@ public class Main extends Sprite {
 //				file = File.applicationStorageDirectory.resolvePath("C:/aTestSrc");
 
 //				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/unpureDemo/src");
-				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/!pirateSpace/production/src/main/flash");
+				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/!workSpace/production/src/main/flash");
 //				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/!pirateSpace/production/src/main/flash/net/bigpoint/deprecated/gui/view/components/common/skin");
 			}
 		}
@@ -184,15 +273,24 @@ public class Main extends Sprite {
 			handleMainDir(mainSrcDir);
 
 			progressLabel.text = "file count:" + currentFiles.length;
+			statisticPanel.setAmount(currentFiles.length, FileStatus.UNKNOWN);
 		}
 
 	}
 
 	private function handleMainDir(mainDir:File):void {
 		currentFiles = new <FileVO>[];
+		currentFilesStatus = new <int>[];
 
 		parseDirFiles(mainDir, "");
 
+		renderFileScroller();
+
+	}
+
+	private function renderFileScroller():void {
+
+		currentFileId = 0;
 		fileCount = currentFiles.length;
 
 		if (fileCount - pageSize > 0) {
@@ -205,6 +303,7 @@ public class Main extends Sprite {
 		renderFilePage();
 	}
 
+
 	private function parseDirFiles(mainDir:File, tab:String):void {
 		var dirFiles:Array = mainDir.getDirectoryListing();
 
@@ -212,9 +311,12 @@ public class Main extends Sprite {
 			var file:File = dirFiles[i];
 
 			currentFiles.push(new FileVO(file, tab));
+			currentFilesStatus.push(FileStatus.UNKNOWN);
 
 			if (file.isDirectory) {
-				parseDirFiles(file, tab + "|   ");
+				if(file.name != ".svn") {
+					parseDirFiles(file, tab + "|   ");
+				}
 			} else {
 				// to auto analize if its light.
 				// analizeFile(file);
@@ -222,10 +324,6 @@ public class Main extends Sprite {
 		}
 	}
 
-	private var currentFiles:Vector.<FileVO>;
-	private var currentFileId:int = 0;
-	private var fileCount:int = 0;
-	private var pageSize:int = 35;
 
 	private function renderFilePage():void {
 		if (currentFiles) {
@@ -234,7 +332,7 @@ public class Main extends Sprite {
 
 					var fileVo:FileVO = currentFiles[i + currentFileId];
 
-					lines[i].setData(fileVo.file, fileVo.tab);
+					lines[i].setData(i + currentFileId, fileVo.file, fileVo.tab, currentFilesStatus[i + currentFileId]);
 				} else {
 					break;
 				}
@@ -242,16 +340,32 @@ public class Main extends Sprite {
 		}
 		// TODO : clear the rest
 		for (i; i < pageSize; i++) {
-			lines[i].setData(null, "");
+			lines[i].setData(i, null, "", FileStatus.BLANK);
+		}
+	}
+
+	private function handleViewFile(event:MouseEvent):void {
+		var file:File = event.target.parent.file;
+		var localFileStream:FileStream = new FileStream();
+		try {
+			localFileStream.open(file, FileMode.READ);
+			debugLabel.text = localFileStream.readUTFBytes(file.size).split("\r").join("");
+		} catch (error:Error) {
+			trace("WARINING : failed to read the file: ", file.nativePath, error);
+			debugLabel.text = "WARINING : failed to read the file:   " + file.nativePath + "  " + error;
 		}
 	}
 
 	private function handleAnalizeFile(event:MouseEvent):void {
-		var file:File = event.target.parent.file;
-		analizeFile(file);
+		analizeFile(event.target.parent.id);
+		renderFilePage();
 	}
 
-	private function analizeFile(targetFile:File):void {
+	private function analizeFile(id:int):void {
+		var targetFile:File = currentFiles[id].file;
+		statisticPanel.reduce(currentFilesStatus[id]);
+
+		var newStatus:int = FileStatus.UNKNOWN;
 		if (targetFile) {
 
 			if (!targetFile.isDirectory) {
@@ -281,15 +395,21 @@ public class Main extends Sprite {
 						}
 					}
 
+					newStatus = fileScaner.scan(targetFile);
+
 				} else {
 					debugLabel.text = "Only as and mxml files suported.";
+					newStatus = FileStatus.UNSUPORTED;
 				}
 			} else {
 				debugLabel.text = "Dictionary?.";
+				newStatus = FileStatus.BLANK;
 			}
 		} else {
 			debugLabel.text = "empty file?.";
 		}
+		currentFilesStatus[id] = newStatus
+		statisticPanel.inclease(newStatus);
 	}
 
 }

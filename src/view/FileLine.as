@@ -1,6 +1,7 @@
 package view {
 import com.bit101.components.PushButton;
 import com.bit101.components.Text;
+import com.bit101.graphic.WebImage;
 
 import flash.display.Sprite;
 import flash.filesystem.File;
@@ -9,8 +10,10 @@ public class FileLine extends Sprite {
 
 	public static var homePath:String;
 
+	public var viewButton:PushButton;
 	public var analizeButton:PushButton;
 
+	public var id:int;
 	public var file:File;
 
 	private var fileLabel:Text;
@@ -24,11 +27,16 @@ public class FileLine extends Sprite {
 		fileLabel.mouseEnabled = false;
 		fileLabel.mouseChildren = false;
 
+		viewButton = new PushButton(this, 650, 0, "View");
+		viewButton.width = 50;
 		analizeButton = new PushButton(this, 700, 0, "Anilize");
 
 	}
 
-	public function setData(file:File, tab:String):void {
+	private var webImage:WebImage;
+
+	public function setData(id:int, file:File, tab:String, status:int):void {
+		this.id = id;
 		this.file = file;
 		fileLabel.text = "";
 		if (file) {
@@ -43,6 +51,14 @@ public class FileLine extends Sprite {
 				fileLabel.text += tab + "     " + file.name + "\n";
 			}
 		}
+
+		if (webImage) {
+			webImage.load("icons/status_" + status + ".png");
+		} else {
+			webImage = new WebImage(this, 0, 0, "icons/status_" + status + ".png");
+		}
+
+
 	}
 
 }

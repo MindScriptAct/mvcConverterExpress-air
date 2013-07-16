@@ -53,13 +53,9 @@ public class FileTokenizer {
 		}
 
 		if (tokens) {
-
 			var fileText:String = localFileStream.readUTFBytes(file.size);
-
 			debugLabel.text += "//==================\n// tokenize\n//==================\n";
-
 			analizeText(fileText);
-
 			localFileStream.close();
 		}
 		return tokens;

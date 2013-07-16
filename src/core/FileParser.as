@@ -25,7 +25,7 @@ import org.osmf.elements.compositeClasses.SerialDynamicStreamTrait;
 
 import ruleSets.RuleSet;
 
-import ruleSets.RuleSetPureMvc;
+import ruleSets.RuleSetUnpureMvc;
 
 public class FileParser {
 	private var debugLabel:TextArea;
