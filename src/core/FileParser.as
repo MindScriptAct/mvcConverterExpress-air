@@ -547,8 +547,8 @@ public class FileParser {
 			importToken.token.kind = TokenKind.CUSTOME;
 			importToken.token.type = TokenTypes.REPLACE;
 
-			var pathBlock:BlockGroupVO = importBlock.subBlocks[1] as BlockGroupVO;
-			var newPathTokens:Vector.<TokenVO> = new <TokenVO>[];
+			pathBlock = importBlock.subBlocks[1] as BlockGroupVO;
+			newPathTokens = new <TokenVO>[];
 			pathBlock.subTokens = newPathTokens;
 		}
 	}

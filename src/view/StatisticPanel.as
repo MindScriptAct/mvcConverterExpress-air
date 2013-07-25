@@ -7,7 +7,7 @@ import flash.display.Sprite;
 
 public class StatisticPanel extends Sprite {
 
-	var statusLabels:Vector.<Label> = new <Label>[];
+	private var statusLabels:Vector.<Label> = new <Label>[];
 
 	public function StatisticPanel() {
 		new WebImage(this, 0, 0, "icons/status_0.png")

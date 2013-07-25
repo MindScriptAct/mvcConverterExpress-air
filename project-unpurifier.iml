@@ -4,7 +4,7 @@
     <configurations>
       <configuration name="project-unpurifier" target-platform="Desktop" main-class="Main" output-file="project-unpurifier.swf" output-folder="$MODULE_DIR$/bin">
         <dependencies target-player="11.5">
-          <sdk name="flex_sdx_4.9.1" />
+          <sdk name="flex_sdk_4.9.1" />
         </dependencies>
         <compiler-options>
           <option name="additionalOptions" value="-define=CONFIG::debug,true -default-size 1800 800" />
@@ -22,7 +22,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/libSrc" isTestSource="false" />
     </content>
-    <orderEntry type="jdk" jdkName="flex_sdx_4.9.1" jdkType="Flex SDK Type (new)" />
+    <orderEntry type="jdk" jdkName="flex_sdk_4.9.1" jdkType="Flex SDK Type (new)" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

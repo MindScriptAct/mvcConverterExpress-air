@@ -1,17 +1,12 @@
 package {
-import com.bit101.components.HScrollBar;
 import com.bit101.components.PushButton;
 import com.bit101.components.RadioButton;
-import com.bit101.components.ScrollBar;
 import com.bit101.components.Text;
 import com.bit101.components.TextArea;
 import com.bit101.components.VScrollBar;
 
-import constants.AppConstants;
-
 import constants.BlockTypes;
 import constants.FileStatus;
-
 import constants.Literals;
 
 import core.FileParser;
@@ -19,7 +14,6 @@ import core.FileScaner;
 import core.FileTokenizer;
 
 import data.FileVO;
-
 import data.TokenVO;
 
 import flash.display.Sprite;
@@ -30,14 +24,11 @@ import flash.events.MouseEvent;
 import flash.filesystem.File;
 import flash.filesystem.FileMode;
 import flash.filesystem.FileStream;
-import flash.utils.Dictionary;
 
 import ruleSets.RuleSet;
-import ruleSets.RuleSetMacroCommand;
 import ruleSets.RuleSetMediatorExpresify;
 import ruleSets.RuleSetMvcExpress;
 import ruleSets.RuleSetProxyExpresify;
-
 import ruleSets.RuleSetUnpureMvc;
 
 import view.FileLine;
@@ -210,7 +201,7 @@ public class Main extends Sprite {
 			} else {
 				progressLabel.text = "done.  " + fileCount;
 			}
-			if (autoscroll + pageSize < handleFileIndex ) {
+			if (autoscroll + pageSize < handleFileIndex) {
 				autoscrollTo(autoscroll + pageSize);
 			}
 		}
@@ -314,7 +305,7 @@ public class Main extends Sprite {
 			currentFilesStatus.push(FileStatus.UNKNOWN);
 
 			if (file.isDirectory) {
-				if(file.name != ".svn") {
+				if (file.name != ".svn") {
 					parseDirFiles(file, tab + "|   ");
 				}
 			} else {
