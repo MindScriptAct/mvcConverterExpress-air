@@ -1,9 +1,13 @@
 package ruleSets {
+import constants.FileStatus;
+
 import data.blocks.BlockGroupVO;
 
 public class RuleSetMediatorExpresify extends RuleSet {
 
 	public function RuleSetMediatorExpresify() {
+
+		affectedFileStatus = FileStatus.UNPURE_MVC;
 
 		imports_replace["org.mvcexpress.extension.unpuremvc.patterns.mediator.UnpureMediator"] = "org.mvcexpress.mvc.Mediator";
 

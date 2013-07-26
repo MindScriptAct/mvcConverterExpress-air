@@ -1,4 +1,5 @@
 package ruleSets {
+import constants.FileStatus;
 import constants.Literals;
 
 import flash.utils.Dictionary;
@@ -7,6 +8,8 @@ public class RuleSetUnpureMvc extends RuleSet {
 
 
 	public function RuleSetUnpureMvc() {
+
+		affectedFileStatus = FileStatus.PURE_MVC;
 
 		imports_replace["org.puremvc.as3.patterns.facade.Facade"] = "org.mvcexpress.extension.unpuremvc.patterns.facade.UnpureFacade";
 		imports_replace["org.puremvc.as3.patterns.facade.*"] = "org.mvcexpress.extension.unpuremvc.patterns.facade.UnpureFacade";

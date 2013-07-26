@@ -1,8 +1,11 @@
 package ruleSets {
+import constants.FileStatus;
 
 public class RuleSetMvcExpress extends RuleSet {
 
 	public function RuleSetMvcExpress() {
+
+		affectedFileStatus = FileStatus.UNPURE_MVC;
 
 		imports_replace["org.mvcexpress.extension.unpuremvc.patterns.command.UnpureSimpleCommand"] = "org.mvcexpress.mvc.Command";
 		//imports_replace["org.mvcexpress.extension.unpuremvc.patterns.command.UnpureMacroCommand"] = "????";

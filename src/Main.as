@@ -1,6 +1,6 @@
 package {
+import com.bit101.components.ComboBox;
 import com.bit101.components.PushButton;
-import com.bit101.components.RadioButton;
 import com.bit101.components.Text;
 import com.bit101.components.TextArea;
 import com.bit101.components.VScrollBar;
@@ -8,6 +8,7 @@ import com.bit101.components.VScrollBar;
 import constants.BlockTypes;
 import constants.FileStatus;
 import constants.Literals;
+import constants.ToolNames;
 
 import core.FileParser;
 import core.FileScaner;
@@ -28,6 +29,7 @@ import flash.filesystem.FileStream;
 import ruleSets.RuleSet;
 import ruleSets.RuleSetMediatorExpresify;
 import ruleSets.RuleSetMvcExpress;
+import ruleSets.RuleSetMvcExpress1to2;
 import ruleSets.RuleSetProxyExpresify;
 import ruleSets.RuleSetUnpureMvc;
 
@@ -39,6 +41,9 @@ import view.StatisticPanel;
  * @author mindscriptact
  */
 public class Main extends Sprite {
+
+	private static const BLANK_RULE_SET:RuleSet = new RuleSet();
+
 	private var mainSrcDir:File;
 
 	private var textLabel:Text;
@@ -52,7 +57,8 @@ public class Main extends Sprite {
 	private var handleFileIndex:int = int.MAX_VALUE;
 	private var handledItemCount:int;
 
-	static public var ruleSet:RuleSet;
+
+	private var currentRuleSet:RuleSet;
 
 	private var fileScaner:FileScaner = new FileScaner();
 
@@ -68,6 +74,7 @@ public class Main extends Sprite {
 	private var pageSize:int = 37;
 	private var autoscroll:int = 0;
 
+	private var toolBox:ComboBox;
 
 	[SWF(width="1800", height="600", frameRate="30")]
 	public function Main():void {
@@ -135,21 +142,40 @@ public class Main extends Sprite {
 
 		this.stage.addEventListener(Event.ENTER_FRAME, handleFrameTick)
 
+
+//		new RadioButton(this, 30, 30, "scan(writes to files)", true, handleRulesetScan);
+//		new RadioButton(this, 150, 30, "pureMvc>unpureMvc", false, handleRulesetUnpureMvcExpress);
+//		new RadioButton(this, 270, 30, "unpureMvc>mvcExpress", false, handleRulesetMvcExpress);
+//		new RadioButton(this, 400, 30, "clean proxy", false, handleRulesetProxy);
+//		new RadioButton(this, 500, 30, "clean mediator", false, handleRulesetMediator);
+
+		toolBox = new ComboBox(this, 250, 25, ToolNames.SCAN);
+		toolBox.addEventListener(Event.SELECT, handleSelect);
+		toolBox.width = 300;
+		//handleSelect();
+		currentRuleSet = new RuleSet();
+
+
 		CONFIG::debug {
 			file_select();
 		}
 
-
-		new RadioButton(this, 30, 30, "scan(writes to files)", true, handleRulesetScan);
-		new RadioButton(this, 150, 30, "pureMvc>unpureMvc", false, handleRulesetUnpureMvcExpress);
-		new RadioButton(this, 270, 30, "unpureMvc>mvcExpress", false, handleRulesetMvcExpress);
-		new RadioButton(this, 400, 30, "clean proxy", false, handleRulesetProxy);
-		new RadioButton(this, 500, 30, "clean mediator", false, handleRulesetMediator);
-
-		ruleSet = new RuleSet();
-
-
 	}
+
+	private function handleSelect(event:Event = null):void {
+		if (toolBox.items.length) {
+			var toolName:String = toolBox.items[toolBox.selectedIndex];
+			switch (toolName) {
+				case ToolNames.SCAN:
+					currentRuleSet = new RuleSet();
+					break;
+				case ToolNames.MVCE_1_TO_2:
+					currentRuleSet = new RuleSetMvcExpress1to2();
+					break;
+			}
+		}
+	}
+
 
 	private function handleFiltering(event:Event):void {
 		var searchString:String = String(searchText.text);
@@ -167,23 +193,23 @@ public class Main extends Sprite {
 	}
 
 	private function handleRulesetScan(event:Event):void {
-		ruleSet = new RuleSet();
+		currentRuleSet = new RuleSet();
 	}
 
 	private function handleRulesetUnpureMvcExpress(event:Event):void {
-		ruleSet = new RuleSetUnpureMvc();
+		currentRuleSet = new RuleSetUnpureMvc();
 	}
 
 	private function handleRulesetMvcExpress(event:Event):void {
-		ruleSet = new RuleSetMvcExpress();
+		currentRuleSet = new RuleSetMvcExpress();
 	}
 
 	private function handleRulesetProxy(event:Event):void {
-		ruleSet = new RuleSetProxyExpresify();
+		currentRuleSet = new RuleSetProxyExpresify();
 	}
 
 	private function handleRulesetMediator(event:Event):void {
-		ruleSet = new RuleSetMediatorExpresify();
+		currentRuleSet = new RuleSetMediatorExpresify();
 	}
 
 	private function handleFrameTick(event:Event):void {
@@ -249,7 +275,8 @@ public class Main extends Sprite {
 //				file = File.applicationStorageDirectory.resolvePath("C:/aTestSrc");
 
 //				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/unpureDemo/src");
-				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/!workSpace/production/src/main/flash");
+//				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/!workSpace/production/src/main/flash");
+				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/mvcExpress-ticTacToe/src");
 //				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/!pirateSpace/production/src/main/flash/net/bigpoint/deprecated/gui/view/components/common/skin");
 			}
 		}
@@ -270,6 +297,9 @@ public class Main extends Sprite {
 	}
 
 	private function handleMainDir(mainDir:File):void {
+
+		setDefaultTools();
+
 		currentFiles = new <FileVO>[];
 		currentFilesStatus = new <int>[];
 
@@ -277,6 +307,11 @@ public class Main extends Sprite {
 
 		renderFileScroller();
 
+	}
+
+	private function setDefaultTools():void {
+		toolBox.addItem(ToolNames.SCAN);
+		toolBox.addItem(ToolNames.MVCE_1_TO_2);
 	}
 
 	private function renderFileScroller():void {
@@ -305,7 +340,7 @@ public class Main extends Sprite {
 			currentFilesStatus.push(FileStatus.UNKNOWN);
 
 			if (file.isDirectory) {
-				if (file.name != ".svn") {
+				if (file.name != ".git" && file.name != ".svn") {
 					parseDirFiles(file, tab + "|   ");
 				}
 			} else {
@@ -337,13 +372,16 @@ public class Main extends Sprite {
 
 	private function handleViewFile(event:MouseEvent):void {
 		var file:File = event.target.parent.file;
-		var localFileStream:FileStream = new FileStream();
-		try {
-			localFileStream.open(file, FileMode.READ);
-			debugLabel.text = localFileStream.readUTFBytes(file.size).split("\r").join("");
-		} catch (error:Error) {
-			trace("WARINING : failed to read the file: ", file.nativePath, error);
-			debugLabel.text = "WARINING : failed to read the file:   " + file.nativePath + "  " + error;
+		if (file) {
+
+			var localFileStream:FileStream = new FileStream();
+			try {
+				localFileStream.open(file, FileMode.READ);
+				debugLabel.text = localFileStream.readUTFBytes(file.size).split("\r").join("");
+			} catch (error:Error) {
+				trace("WARINING : failed to read the file: ", file.nativePath, error);
+				debugLabel.text = "WARINING : failed to read the file:   " + file.nativePath + "  " + error;
+			}
 		}
 	}
 
@@ -353,54 +391,98 @@ public class Main extends Sprite {
 	}
 
 	private function analizeFile(id:int):void {
+		// check file status.
+		if (currentRuleSet != BLANK_RULE_SET && currentFilesStatus[id] == 0) {
+			doAnalizeFile(id, BLANK_RULE_SET);
+		}
+		if (currentRuleSet) {
+			doAnalizeFile(id, currentRuleSet);
+		}
+	}
+
+	private function doAnalizeFile(id:int, analizeRuleSet:RuleSet):void {
 		var targetFile:File = currentFiles[id].file;
-		statisticPanel.reduce(currentFilesStatus[id]);
 
-		var newStatus:int = FileStatus.UNKNOWN;
-		if (targetFile) {
+		// check if correct status.
+		if (analizeRuleSet == BLANK_RULE_SET || currentFilesStatus[id] == analizeRuleSet.affectedFileStatus) {
 
-			if (!targetFile.isDirectory) {
-				if (targetFile.extension == "as" || targetFile.extension == "mxml") {
+			statisticPanel.reduce(currentFilesStatus[id]);
 
-					debugLabel.text = "";
+			var newStatus:int = FileStatus.UNKNOWN;
+			if (targetFile) {
 
-					var fileTokenizer:FileTokenizer = new FileTokenizer(debugLabel);
-					var tokens:Vector.<TokenVO> = fileTokenizer.tokenizeFile(targetFile);
-					if (tokens) {
-						var fileAnalivel:FileParser = new FileParser(debugLabel);
+				if (!targetFile.isDirectory) {
+					if (targetFile.extension == "as" || targetFile.extension == "mxml") {
 
-						var output:String = fileAnalivel.analizeTokens(tokens);
 
-						// do save..
-						if (1) {
+						var originalFileContent:String = getFileContent(targetFile);
 
-							var writeStream:FileStream = new FileStream();
-							try {
-								writeStream.open(targetFile, FileMode.WRITE);
+						debugLabel.text = "";
 
-								writeStream.writeUTFBytes(output);
-								writeStream.close();
-							} catch (error:Error) {
-								trace("Warning: failed to write changes: ", targetFile.nativePath, error);
+						var fileTokenizer:FileTokenizer = new FileTokenizer(debugLabel);
+
+
+						if (originalFileContent) {
+
+							var tokens:Vector.<TokenVO> = fileTokenizer.tokenizeText(originalFileContent);
+
+							if (tokens && tokens.length) {
+
+								var fileParser:FileParser = new FileParser(debugLabel);
+
+								var output:String = fileParser.analizeTokens(tokens, analizeRuleSet);
+
+								// do save?
+								if (analizeRuleSet == BLANK_RULE_SET) {
+									if (originalFileContent != output) {
+										newStatus = FileStatus.ERROR;
+									}
+								} else if (originalFileContent != output) {
+									var writeStream:FileStream = new FileStream();
+									try {
+										writeStream.open(targetFile, FileMode.WRITE);
+
+										writeStream.writeUTFBytes(output);
+										writeStream.close();
+									} catch (error:Error) {
+										trace("Warning: failed to write changes: ", targetFile.nativePath, error);
+									}
+								}
 							}
 						}
+
+						newStatus = fileScaner.scan(targetFile);
+
+					} else {
+						debugLabel.text = "Only as and mxml files suported.";
+						newStatus = FileStatus.UNSUPORTED;
 					}
-
-					newStatus = fileScaner.scan(targetFile);
-
 				} else {
-					debugLabel.text = "Only as and mxml files suported.";
-					newStatus = FileStatus.UNSUPORTED;
+					debugLabel.text = "Dictionary?.";
+					newStatus = FileStatus.BLANK;
 				}
 			} else {
-				debugLabel.text = "Dictionary?.";
-				newStatus = FileStatus.BLANK;
+				debugLabel.text = "empty file?.";
 			}
-		} else {
-			debugLabel.text = "empty file?.";
+			currentFilesStatus[id] = newStatus
+			statisticPanel.inclease(newStatus);
+
 		}
-		currentFilesStatus[id] = newStatus
-		statisticPanel.inclease(newStatus);
+	}
+
+	private function getFileContent(file:File):String {
+		var retVal:String;
+
+		var localFileStream:FileStream = new FileStream();
+		try {
+			localFileStream.open(file, FileMode.READ);
+			retVal = localFileStream.readUTFBytes(file.size);
+		} catch (error:Error) {
+			trace("WARINING : failed to read the file: ", file.nativePath, error);
+		}
+		localFileStream.close();
+
+		return retVal;
 	}
 
 }

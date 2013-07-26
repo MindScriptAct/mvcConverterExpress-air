@@ -1,9 +1,13 @@
 package ruleSets {
+import constants.FileStatus;
+
 import data.blocks.BlockGroupVO;
 
 public class RuleSetProxyExpresify extends RuleSet {
 
 	public function RuleSetProxyExpresify() {
+
+		affectedFileStatus = FileStatus.UNPURE_MVC;
 
 		imports_replace["org.mvcexpress.extension.unpuremvc.patterns.proxy.UnpureProxy"] = "org.mvcexpress.mvc.Proxy";
 

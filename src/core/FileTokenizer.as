@@ -40,29 +40,10 @@ public class FileTokenizer {
 		this.debugLabel = debugLabel;
 	}
 
-
-	public function tokenizeFile(file:File):Vector.<TokenVO> {
+	public function tokenizeText(fileText:String):Vector.<TokenVO> {
 		tokens = new <TokenVO>[];
 
-		var localFileStream:FileStream = new FileStream();
-		try {
-			localFileStream.open(file, FileMode.UPDATE);
-		} catch (error:Error) {
-			trace("WARINING : failed to read the file: ", file.nativePath, error);
-			tokens = null;
-		}
-
-		if (tokens) {
-			var fileText:String = localFileStream.readUTFBytes(file.size);
-			debugLabel.text += "//==================\n// tokenize\n//==================\n";
-			analizeText(fileText);
-			localFileStream.close();
-		}
-		return tokens;
-	}
-
-
-	private function analizeText(fileText:String):void {
+		debugLabel.text += "//==================\n// tokenize\n//==================\n";
 
 		this.fileText = fileText;
 		index = 0;
@@ -214,6 +195,8 @@ public class FileTokenizer {
 				debugLabel.text += tokens[i].type + ":" + tokens[i].value + ((tokens[i].keyWord) ? "\t\t\t" + tokens[i].keyWord : "") + "\n";
 			}
 		}
+
+		return tokens;
 	}
 
 	private function charFromIndexAt(posShift:int):String {

@@ -36,19 +36,18 @@ public class FileParser {
 
 	private var tokenStack:Vector.<TokenVO>;
 
-	private var ruleSet:RuleSet;
-
 	private var currentClassExtend:String = "";
+
+	private var ruleSet:RuleSet;
 
 	public function FileParser(debugLabel:TextArea) {
 		this.debugLabel = debugLabel;
-
-		ruleSet = Main.ruleSet;
 	}
 
 
-	public function analizeTokens(tokens:Vector.<TokenVO>):String {
+	public function analizeTokens(tokens:Vector.<TokenVO>,  ruleSet:RuleSet):String {
 		this.tokens = tokens;
+		this.ruleSet = ruleSet;
 		tokenCount = tokens.length;
 		index = 0;
 		currentClassExtend = "";

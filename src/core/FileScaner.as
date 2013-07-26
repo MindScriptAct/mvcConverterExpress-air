@@ -21,15 +21,25 @@ public class FileScaner {
 
 			var fileText:String = localFileStream.readUTFBytes(file.size);
 
-			if (fileText.indexOf("org.mvcexpress.mvc") > -1) {
-				retVal = FileStatus.MVC_EXPRESS;
-			} else if (fileText.indexOf("org.mvcexpress.modules") > -1) {
-				retVal = FileStatus.MVC_EXPRESS;
+
+			if (fileText.indexOf("mvcexpress.mvc") > -1) {
+				retVal = FileStatus.MVC_EXPRESS_v2;
+			} else if (fileText.indexOf("mvcexpress.modules") > -1) {
+				retVal = FileStatus.MVC_EXPRESS_v2;
 			}
+
+
+			if (fileText.indexOf("org.mvcexpress.mvc") > -1) {
+				retVal = FileStatus.MVC_EXPRESS_v1;
+			} else if (fileText.indexOf("org.mvcexpress.modules") > -1) {
+				retVal = FileStatus.MVC_EXPRESS_v1;
+			}
+
 
 			if (fileText.indexOf("org.mvcexpress.extension.unpuremvc") > -1) {
 				retVal = FileStatus.UNPURE_MVC;
 			}
+
 
 			if (fileText.indexOf("org.puremvc.as3") > -1) {
 				retVal = FileStatus.PURE_MVC;
