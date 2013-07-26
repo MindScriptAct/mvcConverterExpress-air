@@ -7,25 +7,18 @@ import constants.Literals;
 import constants.TokenKind;
 import constants.TokenTypes;
 
+import data.TokenVO;
 import data.blocks.BlockBaseVO;
 import data.blocks.BlockContainerVO;
 import data.blocks.BlockGroupVO;
 import data.blocks.BlockTokenVO;
-import data.blocks.BlockTokenVO;
-import data.TokenVO;
 import data.blocks.dedicated.ClassBlockVO;
 import data.blocks.dedicated.FunctionBlockVO;
 import data.blocks.dedicated.PathBlockVO;
 
 import flash.utils.Dictionary;
 
-import mx.collections.CursorBookmark;
-
-import org.osmf.elements.compositeClasses.SerialDynamicStreamTrait;
-
 import ruleSets.RuleSet;
-
-import ruleSets.RuleSetUnpureMvc;
 
 public class FileParser {
 	private var debugLabel:TextArea;
@@ -45,7 +38,7 @@ public class FileParser {
 	}
 
 
-	public function analizeTokens(tokens:Vector.<TokenVO>,  ruleSet:RuleSet):String {
+	public function analizeTokens(tokens:Vector.<TokenVO>, ruleSet:RuleSet):String {
 		this.tokens = tokens;
 		this.ruleSet = ruleSet;
 		tokenCount = tokens.length;
@@ -68,15 +61,20 @@ public class FileParser {
 
 		}
 
-		debugLabel.text += "//==================\n// analize\n//==================\n";
-		if (AppConstants.DEBUG_PARSER) {
-			debugLabel.text += root.debugBlock("");
+		if (AppConstants.DEBUG_MODE) {
+			debugLabel.text += "//==================\n// analize\n//==================\n";
+			if (AppConstants.DEBUG_PARSER) {
+				debugLabel.text += root.debugBlock("");
+			}
 		}
 
 		var output:String = root.readBlock();
-		debugLabel.text += "//==================\n// output\n//==================\n";
-		if (AppConstants.DEBUG_OUTPUT) {
-			debugLabel.text += output;
+
+		if (AppConstants.DEBUG_MODE) {
+			debugLabel.text += "//==================\n// output\n//==================\n";
+			if (AppConstants.DEBUG_OUTPUT) {
+				debugLabel.text += output;
+			}
 		}
 		return output;
 	}

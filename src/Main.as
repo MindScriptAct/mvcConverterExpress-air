@@ -1,5 +1,6 @@
 package {
 import com.bit101.components.ComboBox;
+import com.bit101.components.Label;
 import com.bit101.components.PushButton;
 import com.bit101.components.Text;
 import com.bit101.components.TextArea;
@@ -25,6 +26,7 @@ import flash.events.MouseEvent;
 import flash.filesystem.File;
 import flash.filesystem.FileMode;
 import flash.filesystem.FileStream;
+import flash.text.TextFieldAutoSize;
 
 import ruleSets.RuleSet;
 import ruleSets.RuleSetMediatorExpresify;
@@ -42,12 +44,13 @@ import view.StatisticPanel;
  */
 public class Main extends Sprite {
 
+
 	private static const BLANK_RULE_SET:RuleSet = new RuleSet();
 
 	private var mainSrcDir:File;
 
 	private var textLabel:Text;
-	private var progressLabel:Text;
+	private var progressLabel:Label;
 	private var debugLabel:TextArea;
 
 	private var resultContainer:Sprite;
@@ -76,6 +79,8 @@ public class Main extends Sprite {
 
 	private var toolBox:ComboBox;
 
+	private var homePath:String
+
 	[SWF(width="1800", height="600", frameRate="30")]
 	public function Main():void {
 
@@ -87,31 +92,32 @@ public class Main extends Sprite {
 		textLabel.height = 20;
 
 
-		new PushButton(this, 805, 2, "browse", handleBrowse);
+		new PushButton(this, 705, 2, "browse", handleBrowse);
 
-		new PushButton(this, 600, 22, "process all", analizeAllFiles);
-		new PushButton(this, 700, 22, "stop", stopAnilize);
+		new PushButton(this, 310, 22, "process all", analizeAllFiles);
+		new PushButton(this, 415, 22, "stop", stopAnilize);
 
 
-		debugLabel = new TextArea(this, 1000, 0, "");
-		debugLabel.width = 800;
+		debugLabel = new TextArea(this, 900, 0, "");
+		debugLabel.width = 900;
 		debugLabel.height = 800;
 
 
-		progressLabel = new Text(this, 840, 75, "...");
+		progressLabel = new Label(this, 730, 25, "...");
 		progressLabel.width = 150;
 		progressLabel.height = 20;
 
 		statisticPanel = new StatisticPanel();
 		this.addChild(statisticPanel);
-		statisticPanel.x = 840;
+		statisticPanel.x = 830;
 		statisticPanel.y = 100;
 
 
-		searchText = new Text(this, 840, 750, "");
-		searchText.width = 150;
+		searchText = new Text(this, 530, 22, "");
+		searchText.width = 100;
 		searchText.height = 20;
-		new PushButton(this, 840, 775, "filter", handleFiltering);
+		var filterButton:PushButton = new PushButton(this, 630, 22, "filter", handleFiltering);
+		filterButton.width = 50;
 
 
 //
@@ -149,9 +155,10 @@ public class Main extends Sprite {
 //		new RadioButton(this, 400, 30, "clean proxy", false, handleRulesetProxy);
 //		new RadioButton(this, 500, 30, "clean mediator", false, handleRulesetMediator);
 
-		toolBox = new ComboBox(this, 250, 25, ToolNames.SCAN);
+		toolBox = new ComboBox(this, 5, 25, ToolNames.SCAN);
 		toolBox.addEventListener(Event.SELECT, handleSelect);
 		toolBox.width = 300;
+		toolBox.selectedIndex = 0;
 		//handleSelect();
 		currentRuleSet = new RuleSet();
 
@@ -234,6 +241,9 @@ public class Main extends Sprite {
 	}
 
 	private function analizeAllFiles(event:MouseEvent):void {
+
+		debugLabel.text += "\n" + ".... processing all files with : " + toolBox.items[toolBox.selectedIndex];
+
 		handleFileIndex = 0;
 		autoscrollTo(0);
 	}
@@ -297,6 +307,8 @@ public class Main extends Sprite {
 	}
 
 	private function handleMainDir(mainDir:File):void {
+		homePath = mainDir.nativePath;
+		debugLabel.text = "Dir selected : " + mainDir.nativePath;
 
 		setDefaultTools();
 
@@ -331,6 +343,7 @@ public class Main extends Sprite {
 
 
 	private function parseDirFiles(mainDir:File, tab:String):void {
+
 		var dirFiles:Array = mainDir.getDirectoryListing();
 
 		for (var i:int = 0; i < dirFiles.length; i++) {
@@ -402,7 +415,7 @@ public class Main extends Sprite {
 
 	private function doAnalizeFile(id:int, analizeRuleSet:RuleSet):void {
 		var targetFile:File = currentFiles[id].file;
-
+		var oldStatus:int = currentFilesStatus[id];
 		// check if correct status.
 		if (analizeRuleSet == BLANK_RULE_SET || currentFilesStatus[id] == analizeRuleSet.affectedFileStatus) {
 
@@ -411,16 +424,14 @@ public class Main extends Sprite {
 			var newStatus:int = FileStatus.UNKNOWN;
 			if (targetFile) {
 
+				var debugtext:String = targetFile.nativePath.split(homePath)[1] + " : "
+
 				if (!targetFile.isDirectory) {
 					if (targetFile.extension == "as" || targetFile.extension == "mxml") {
 
-
 						var originalFileContent:String = getFileContent(targetFile);
 
-						debugLabel.text = "";
-
 						var fileTokenizer:FileTokenizer = new FileTokenizer(debugLabel);
-
 
 						if (originalFileContent) {
 
@@ -450,22 +461,23 @@ public class Main extends Sprite {
 								}
 							}
 						}
-
 						newStatus = fileScaner.scan(targetFile);
-
+						debugtext += "analized.   File status changed from " + FileStatus.STATUS_NAMES[oldStatus] + " to " + FileStatus.STATUS_NAMES[newStatus];
 					} else {
-						debugLabel.text = "Only as and mxml files suported.";
+						debugtext += "Only as and mxml files suported.";
 						newStatus = FileStatus.UNSUPORTED;
 					}
 				} else {
-					debugLabel.text = "Dictionary?.";
+					debugtext += "Dictionary.";
 					newStatus = FileStatus.BLANK;
 				}
 			} else {
-				debugLabel.text = "empty file?.";
+				debugtext += "empty file?.";
 			}
 			currentFilesStatus[id] = newStatus
 			statisticPanel.inclease(newStatus);
+
+			debugLabel.text += "\n" + debugtext;
 
 		}
 	}

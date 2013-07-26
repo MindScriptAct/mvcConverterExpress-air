@@ -2,7 +2,7 @@ package constants {
 public class FileStatus {
 
 
-	public static const NOT_DEFINED:int = -1;
+	public static const NOT_DEFINED:int = 20;
 
 	public static const UNKNOWN:int = 0;
 
@@ -17,7 +17,29 @@ public class FileStatus {
 	public static const MVC_EXPRESS_v2:int = 7;
 
 
-
+	public static const STATUS_NAMES:Array = [
+		"UNKNOWN",
+		"BLANK",
+		"UNSUPORTED",
+		"ERROR",
+		"PURE_MVC",
+		"UNPURE_MVC",
+		"MVC_EXPRESS_v1",
+		"MVC_EXPRESS_v2",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"",
+		"NOT_DEFINED"
+	];
 
 
 }

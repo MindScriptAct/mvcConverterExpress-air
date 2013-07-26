@@ -43,7 +43,9 @@ public class FileTokenizer {
 	public function tokenizeText(fileText:String):Vector.<TokenVO> {
 		tokens = new <TokenVO>[];
 
-		debugLabel.text += "//==================\n// tokenize\n//==================\n";
+		if (AppConstants.DEBUG_MODE) {
+			debugLabel.text += "//==================\n// tokenize\n//==================\n";
+		}
 
 		this.fileText = fileText;
 		index = 0;
@@ -190,7 +192,7 @@ public class FileTokenizer {
 				tokens.push(new TokenVO(tokenKind, tokenType, tokenData, tokenKeyWord));
 			}
 		}
-		if (AppConstants.DEBUG_TOKENS) {
+		if (AppConstants.DEBUG_MODE && AppConstants.DEBUG_TOKENS) {
 			for (var i:int = 0; i < tokens.length; i++) {
 				debugLabel.text += tokens[i].type + ":" + tokens[i].value + ((tokens[i].keyWord) ? "\t\t\t" + tokens[i].keyWord : "") + "\n";
 			}
