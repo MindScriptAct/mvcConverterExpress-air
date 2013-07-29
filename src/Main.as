@@ -26,12 +26,12 @@ import flash.events.MouseEvent;
 import flash.filesystem.File;
 import flash.filesystem.FileMode;
 import flash.filesystem.FileStream;
-import flash.text.TextFieldAutoSize;
 
 import ruleSets.RuleSet;
 import ruleSets.RuleSetMediatorExpresify;
 import ruleSets.RuleSetMvcExpress;
 import ruleSets.RuleSetMvcExpress1to2;
+import ruleSets.RuleSetMvcExpressLive1to2;
 import ruleSets.RuleSetProxyExpresify;
 import ruleSets.RuleSetUnpureMvc;
 
@@ -155,9 +155,10 @@ public class Main extends Sprite {
 //		new RadioButton(this, 400, 30, "clean proxy", false, handleRulesetProxy);
 //		new RadioButton(this, 500, 30, "clean mediator", false, handleRulesetMediator);
 
-		toolBox = new ComboBox(this, 5, 25, ToolNames.SCAN);
+		toolBox = new ComboBox(this, 5, 25, ToolNames.SCAN, [ToolNames.SCAN]);
 		toolBox.addEventListener(Event.SELECT, handleSelect);
 		toolBox.width = 300;
+
 		toolBox.selectedIndex = 0;
 		//handleSelect();
 		currentRuleSet = new RuleSet();
@@ -179,6 +180,10 @@ public class Main extends Sprite {
 				case ToolNames.MVCE_1_TO_2:
 					currentRuleSet = new RuleSetMvcExpress1to2();
 					break;
+				case ToolNames.MVCE_LIVE_1_TO_2:
+					currentRuleSet = new RuleSetMvcExpressLive1to2();
+					break;
+
 			}
 		}
 	}
@@ -241,8 +246,7 @@ public class Main extends Sprite {
 	}
 
 	private function analizeAllFiles(event:MouseEvent):void {
-
-		debugLabel.text += "\n" + ".... processing all files with : " + toolBox.items[toolBox.selectedIndex];
+		debugLabel.text += "\n" + " ... processing all files with : " + toolBox.items[toolBox.selectedIndex];
 
 		handleFileIndex = 0;
 		autoscrollTo(0);
@@ -286,7 +290,8 @@ public class Main extends Sprite {
 
 //				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/unpureDemo/src");
 //				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/!workSpace/production/src/main/flash");
-				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/mvcExpress-ticTacToe/src");
+				//mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/mvcExpress-ticTacToe/src");
+				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/mvcExpress-liveVizualizer/src");
 //				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/!pirateSpace/production/src/main/flash/net/bigpoint/deprecated/gui/view/components/common/skin");
 			}
 		}
@@ -322,8 +327,10 @@ public class Main extends Sprite {
 	}
 
 	private function setDefaultTools():void {
+		toolBox.removeAll();
 		toolBox.addItem(ToolNames.SCAN);
 		toolBox.addItem(ToolNames.MVCE_1_TO_2);
+		toolBox.addItem(ToolNames.MVCE_LIVE_1_TO_2);
 	}
 
 	private function renderFileScroller():void {

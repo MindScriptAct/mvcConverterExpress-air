@@ -75,6 +75,12 @@ public class FileParser {
 			if (AppConstants.DEBUG_OUTPUT) {
 				debugLabel.text += output;
 			}
+
+			if (debugLabel.textField.numLines > AppConstants.DEBUG_LINE_CAP) {
+				debugLabel.text = debugLabel.text.substring(debugLabel.text.length >> 1)
+			}
+
+			// TODO : scroll to end!?
 		}
 		return output;
 	}

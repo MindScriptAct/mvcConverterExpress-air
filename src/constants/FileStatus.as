@@ -16,6 +16,8 @@ public class FileStatus {
 	public static const MVC_EXPRESS_v1:int = 6;
 	public static const MVC_EXPRESS_v2:int = 7;
 
+	public static const MVC_EXPRESS_v2_LIVE:int = 8;
+
 
 	public static const STATUS_NAMES:Array = [
 		"UNKNOWN",
@@ -26,7 +28,7 @@ public class FileStatus {
 		"UNPURE_MVC",
 		"MVC_EXPRESS_v1",
 		"MVC_EXPRESS_v2",
-		"",
+		"MVC_EXPRESS_v2_LIVE",
 		"",
 		"",
 		"",

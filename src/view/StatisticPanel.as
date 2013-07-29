@@ -19,8 +19,9 @@ public class StatisticPanel extends Sprite {
 		new WebImage(this, 0, 100, "icons/status_4.png")
 		new WebImage(this, 0, 130, "icons/status_5.png")
 
-		new WebImage(this, 0, 150, "icons/status_6.png")
+		new WebImage(this, 0, 160, "icons/status_6.png")
 		new WebImage(this, 0, 180, "icons/status_7.png")
+		new WebImage(this, 0, 200, "icons/status_8.png")
 
 		statusLabels.push(new Label(this, 30, 0, "0"));
 		statusLabels.push(new Label(this, 30, 20, "0"));
@@ -30,6 +31,7 @@ public class StatisticPanel extends Sprite {
 		statusLabels.push(new Label(this, 30, 130, "0"));
 		statusLabels.push(new Label(this, 30, 150, "0"));
 		statusLabels.push(new Label(this, 30, 180, "0"));
+		statusLabels.push(new Label(this, 30, 200, "0"));
 
 
 	}

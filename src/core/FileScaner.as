@@ -33,8 +33,13 @@ public class FileScaner {
 				retVal = FileStatus.MVC_EXPRESS_v1;
 			} else if (fileText.indexOf("org.mvcexpress.modules") > -1) {
 				retVal = FileStatus.MVC_EXPRESS_v1;
+			} else if (fileText.indexOf("org.mvcexpress.live") > -1) {
+				retVal = FileStatus.MVC_EXPRESS_v1;
 			}
 
+			if (fileText.indexOf("mvcexpress.dlc.live") > -1) {
+				retVal = FileStatus.MVC_EXPRESS_v2_LIVE;
+			}
 
 			if (fileText.indexOf("org.mvcexpress.extension.unpuremvc") > -1) {
 				retVal = FileStatus.UNPURE_MVC;
