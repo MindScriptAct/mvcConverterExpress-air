@@ -4,10 +4,10 @@ import constants.Literals;
 
 import flash.utils.Dictionary;
 
-public class RuleSetUnpureMvc extends RuleSet {
+public class RuleSetUnpureMvc1Depricated extends RuleSet {
 
 
-	public function RuleSetUnpureMvc() {
+	public function RuleSetUnpureMvc1Depricated() {
 
 		affectedFileStatus = FileStatus.PURE_MVC;
 
@@ -66,10 +66,6 @@ public class RuleSetUnpureMvc extends RuleSet {
 
 
 		function_modifier_replace["Proxy"] = new Dictionary();
-		function_modifier_replace["Proxy"]["onRegister"] = [Literals.PUBLIC, Literals.PROTECTED];
-		function_modifier_replace["Proxy"]["onRemove"] = [Literals.PUBLIC, Literals.PROTECTED];
-
-		function_modifier_replace["UnpureProxy"] = new Dictionary();
 		function_modifier_replace["Proxy"]["onRegister"] = [Literals.PUBLIC, Literals.PROTECTED];
 		function_modifier_replace["Proxy"]["onRemove"] = [Literals.PUBLIC, Literals.PROTECTED];
 

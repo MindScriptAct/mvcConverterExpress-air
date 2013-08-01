@@ -41,7 +41,7 @@ public class FileScaner {
 				retVal = FileStatus.MVC_EXPRESS_v2_LIVE;
 			}
 
-			if (fileText.indexOf("org.mvcexpress.extension.unpuremvc") > -1) {
+			if (fileText.indexOf("mvcexpress.dlc.unpuremvc") > -1) {
 				retVal = FileStatus.UNPURE_MVC;
 			}
 

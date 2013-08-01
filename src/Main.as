@@ -33,7 +33,8 @@ import ruleSets.RuleSetMvcExpress;
 import ruleSets.RuleSetMvcExpress1to2;
 import ruleSets.RuleSetMvcExpressLive1to2;
 import ruleSets.RuleSetProxyExpresify;
-import ruleSets.RuleSetUnpureMvc;
+import ruleSets.RuleSetUnpureMvc1Depricated;
+import ruleSets.RuleSetUnpureMvc2;
 
 import view.FileLine;
 import view.StatisticPanel;
@@ -42,6 +43,7 @@ import view.StatisticPanel;
  * ...
  * @author mindscriptact
  */
+[SWF(width='1800', height='800', backgroundColor='#ffffff', frameRate='120')]
 public class Main extends Sprite {
 
 
@@ -183,8 +185,11 @@ public class Main extends Sprite {
 				case ToolNames.MVCE_LIVE_1_TO_2:
 					currentRuleSet = new RuleSetMvcExpressLive1to2();
 					break;
+				case ToolNames.PUREMVC_TO_MVC_EXPRESS_V2:
+					currentRuleSet = new RuleSetUnpureMvc2();
+					break;
 				case ToolNames.PUREMVC_TO_MVC_EXPRESS_V1_DEPRECATED:
-					currentRuleSet = new RuleSetUnpureMvc();
+					currentRuleSet = new RuleSetUnpureMvc1Depricated();
 					break;
 
 			}
@@ -212,7 +217,7 @@ public class Main extends Sprite {
 	}
 
 	private function handleRulesetUnpureMvcExpress(event:Event):void {
-		currentRuleSet = new RuleSetUnpureMvc();
+		currentRuleSet = new RuleSetUnpureMvc1Depricated();
 	}
 
 	private function handleRulesetMvcExpress(event:Event):void {
@@ -292,10 +297,10 @@ public class Main extends Sprite {
 //				file = File.applicationStorageDirectory.resolvePath("C:/aTestSrc");
 
 //				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/unpureDemo/src");
-//				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/!workSpace/production/src/main/flash");
+				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/!workSpace/production/src/main/flash");
 				//mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/mvcExpress-ticTacToe/src");
 				//mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/mvcExpress-liveVizualizer/src");
-				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/Users/rbanevicius/Dropbox/!intelliSpace/unpureDemo/src");
+//				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/Users/rbanevicius/Dropbox/!intelliSpace/unpureDemo/src");
 //				mainSrcDir = File.applicationStorageDirectory.resolvePath("C:/!pirateSpace/production/src/main/flash/net/bigpoint/deprecated/gui/view/components/common/skin");
 			}
 		}
@@ -335,6 +340,7 @@ public class Main extends Sprite {
 		toolBox.addItem(ToolNames.SCAN);
 		toolBox.addItem(ToolNames.MVCE_1_TO_2);
 		toolBox.addItem(ToolNames.MVCE_LIVE_1_TO_2);
+		toolBox.addItem(ToolNames.PUREMVC_TO_MVC_EXPRESS_V2);
 		toolBox.addItem(ToolNames.PUREMVC_TO_MVC_EXPRESS_V1_DEPRECATED);
 	}
 
