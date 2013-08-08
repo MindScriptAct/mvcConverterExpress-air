@@ -2,12 +2,15 @@ package {
 import com.bit101.components.ComboBox;
 import com.bit101.components.Label;
 import com.bit101.components.PushButton;
+import com.bit101.components.PushButton;
+import com.bit101.components.PushButton;
 import com.bit101.components.Text;
 import com.bit101.components.TextArea;
 import com.bit101.components.VScrollBar;
 
 import constants.BlockTypes;
 import constants.FileStatus;
+import constants.HelpTexts;
 import constants.Literals;
 import constants.ToolNames;
 
@@ -89,15 +92,20 @@ public class Main extends Sprite {
 		stage.scaleMode = StageScaleMode.NO_SCALE;
 		stage.align = StageAlign.TOP_LEFT;
 
-		textLabel = new Text(this, 2, 2, "test");
+		textLabel = new Text(this, 2, 2, "");
 		textLabel.width = 800;
-		textLabel.height = 20;
 
 
 		new PushButton(this, 705, 2, "browse", handleBrowse);
 
-		new PushButton(this, 310, 22, "process all", analizeAllFiles);
-		new PushButton(this, 415, 22, "stop", stopAnilize);
+		var helpButton:PushButton = new PushButton(this, 870, 5, "?", handleHelp);
+		helpButton.width = 20;
+		helpButton.height = 15;
+
+		new PushButton(this, 320, 25, "Convert all", analizeAllFiles);
+		var stopButton:PushButton = new PushButton(this, 435, 27, "stop", stopAnilize);
+		stopButton.width = 50;
+		stopButton.height = 15;
 
 
 		debugLabel = new TextArea(this, 900, 0, "");
@@ -170,6 +178,12 @@ public class Main extends Sprite {
 			file_select();
 		}
 
+		debugLabel.text += HelpTexts.HOW_TO_GUIDE;
+
+	}
+
+	private function handleHelp(event:Event = null):void {
+		debugLabel.text += HelpTexts.HOW_TO_GUIDE;
 	}
 
 	private function handleSelect(event:Event = null):void {
@@ -281,12 +295,18 @@ public class Main extends Sprite {
 	private function handleBrowse(evt:MouseEvent):void {
 		handleFileIndex = int.MAX_VALUE;
 
-		mainSrcDir = new File();
-		if (textLabel.text) {
-			mainSrcDir.nativePath = textLabel.text;
+		try {
+			mainSrcDir = new File();
+			if (textLabel.text) {
+				mainSrcDir.nativePath = textLabel.text;
+			}
+			mainSrcDir.addEventListener(Event.SELECT, file_select);
+			mainSrcDir.browseForDirectory("Please select a directory...");
+		} catch (error:Error) {
+			mainSrcDir = new File();
+			mainSrcDir.addEventListener(Event.SELECT, file_select);
+			mainSrcDir.browseForDirectory("Please select a directory...");
 		}
-		mainSrcDir.addEventListener(Event.SELECT, file_select);
-		mainSrcDir.browseForDirectory("Please select a directory...");
 
 	}
 
@@ -339,7 +359,7 @@ public class Main extends Sprite {
 		toolBox.removeAll();
 		toolBox.addItem(ToolNames.SCAN);
 		toolBox.addItem(ToolNames.MVCE_1_TO_2);
-		toolBox.addItem(ToolNames.MVCE_LIVE_1_TO_2);
+//		toolBox.addItem(ToolNames.MVCE_LIVE_1_TO_2);
 		toolBox.addItem(ToolNames.PUREMVC_TO_MVC_EXPRESS_V2);
 		toolBox.addItem(ToolNames.PUREMVC_TO_MVC_EXPRESS_V1_DEPRECATED);
 	}

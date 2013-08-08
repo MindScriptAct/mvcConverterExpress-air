@@ -29,7 +29,7 @@ public class FileLine extends Sprite {
 
 		viewButton = new PushButton(this, 650, 0, "View");
 		viewButton.width = 50;
-		analizeButton = new PushButton(this, 700, 0, "Anilize");
+		analizeButton = new PushButton(this, 700, 0, "Convert");
 
 	}
 

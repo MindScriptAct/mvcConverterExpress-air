@@ -46,7 +46,11 @@ public class FileScaner {
 			}
 
 
-			if (fileText.indexOf("org.puremvc.as3") > -1) {
+			if (fileText.indexOf("org.puremvc.as3.core") > -1) {
+				retVal = FileStatus.PURE_MVC;
+			} else if (fileText.indexOf("org.puremvc.as3.interfaces") > -1) {
+				retVal = FileStatus.PURE_MVC;
+			} else if (fileText.indexOf("org.puremvc.as3.patterns") > -1) {
 				retVal = FileStatus.PURE_MVC;
 			}
 

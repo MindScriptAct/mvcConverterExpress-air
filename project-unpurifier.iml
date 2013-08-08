@@ -2,14 +2,18 @@
 <module type="Flex" version="4">
   <component name="FlexBuildConfigurationManager" active="project-unpurifier">
     <configurations>
-      <configuration name="project-unpurifier" target-platform="Desktop" main-class="Main" output-file="project-unpurifier.swf" output-folder="$MODULE_DIR$/bin">
-        <dependencies target-player="11.5">
-          <sdk name="flex_sdk_4.9.1" />
+      <configuration name="project-unpurifier" target-platform="Desktop" pure-as="true" main-class="Main" output-file="main.swf" output-folder="$MODULE_DIR$/bin">
+        <dependencies>
+          <sdk name="flex_sdk_4.10.0" />
         </dependencies>
         <compiler-options>
           <option name="additionalOptions" value="-define=CONFIG::debug,true -default-size 1800 800" />
         </compiler-options>
-        <packaging-air-desktop package-file-name="project-unpurifier" />
+        <packaging-air-desktop use-generated-descriptor="false" custom-descriptor-path="$MODULE_DIR$/application.xml" package-file-name="project-unpurifier">
+          <files-to-package>
+            <FilePathAndPathInPackage file-path="$MODULE_DIR$/resources" path-in-package="." />
+          </files-to-package>
+        </packaging-air-desktop>
         <packaging-android />
         <packaging-ios />
       </configuration>
@@ -21,8 +25,9 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/libSrc" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/resources" isTestSource="false" />
     </content>
-    <orderEntry type="jdk" jdkName="flex_sdk_4.9.1" jdkType="Flex SDK Type (new)" />
+    <orderEntry type="jdk" jdkName="flex_sdk_4.10.0" jdkType="Flex SDK Type (new)" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
